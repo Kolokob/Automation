@@ -346,20 +346,16 @@ class BaseFixture:
         file1_path = '/Users/kolokob/PycharmProjects/Automation/Tests/Combined/LastMile/OUTPUTS/outputs_android.json'
         file2_path = '/Users/kolokob/PycharmProjects/Automation/Tests/Combined/LastMile/OUTPUTS/outputs_ios.json'
 
-        # Открытие и чтение JSON файлов
         with open(file1_path, 'r') as f1, open(file2_path, 'r') as f2:
             file1_list = json.load(f1)
             file2_list = json.load(f2)
 
-        # Извлечение последнего объекта из каждого списка
         file1 = file1_list[-1]
         file2 = file2_list[-1]
 
-        # Преобразование order_id второго файла в строку для сравнения
         if 'order_id' in file2:
             file2['order_id'] = str(file2['order_id'])
 
-        # Логическое сопоставление ключей
         logical_mapping = {
             "order_id": "order_id",
             "when": "pick_up_time",
@@ -370,7 +366,6 @@ class BaseFixture:
             "apt_drop_off": "receiver_full_name"
         }
 
-        # Сравнение значений
         for key1, key2 in logical_mapping.items():
             value1 = file1.get(key1)
             value2 = file2.get(key2)
@@ -383,7 +378,6 @@ class BaseFixture:
                     'file2_value': value2
                 })
 
-        # Красивый вывод различий
         if differences:
             print("Differences found:")
             for diff in differences:
@@ -394,6 +388,7 @@ class BaseFixture:
                 print("-" * 40)
         else:
             print("No differences found. Test passed.")
+
 class Swiper:
 
     def __init__(self, context):
