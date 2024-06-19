@@ -1,0 +1,106 @@
+[
+    {
+        "sender_full_name": "Dart Wader",
+        "sender_phone_number": "5104029083",
+        "receiver_full_name": "John Marston",
+        "receiver_phone_number": "5104029083",
+        "parcel_size": "medium",
+        "declared_value": "1000",
+        "pick_up_time": "urgent",
+        "extra_services": {
+            "Ladder": {
+                "description": "Be careful",
+                "duration_or_quantity": "5"
+            },
+            "Packing and Unpacking": {
+                "description": "ARA",
+                "duration_or_quantity": "2 hours"
+            }
+        },
+        "promo_code": "50%",
+        "tips": "50",
+        "description": "Describe your shipment",
+        "photos": 0,
+        "signature": null,
+        "order_id": 1,
+        "unique_id": 3
+    },
+    {
+        "sender_full_name": "Dart Wader",
+        "sender_phone_number": "5104029083",
+        "receiver_full_name": "John Marston",
+        "receiver_phone_number": "5104029083",
+        "parcel_size": "medium",
+        "declared_value": "1000",
+        "pick_up_time": "urgent",
+        "extra_services": {
+            "Ladder": {
+                "description": "Be careful",
+                "duration_or_quantity": "5"
+            },
+            "Packing and Unpacking": {
+                "description": "ARA",
+                "duration_or_quantity": "2 hours"
+            }
+        },
+        "promo_code": "50%",
+        "tips": "50",
+        "description": "Describe your shipment",
+        "photos": 0,
+        "signature": null,
+        "order_id": 1,
+        "unique_id": 4
+    },
+    {
+        "sender_full_name": "Dart Wader",
+        "sender_phone_number": "5104029083",
+        "receiver_full_name": "John Marston",
+        "receiver_phone_number": "5104029083",
+        "parcel_size": "medium",
+        "declared_value": "1000",
+        "pick_up_time": "urgent",
+        "extra_services": {
+            "Ladder": {
+                "description": "Be careful",
+                "duration_or_quantity": "5"
+            },
+            "Packing and Unpacking": {
+                "description": "ARA",
+                "duration_or_quantity": "2 hours"
+            }
+        },
+        "promo_code": "50%",
+        "tips": "50",
+        "description": "Describe your shipment",
+        "photos": 0,
+        "signature": null,
+        "order_id": 1,
+        "unique_id": 5
+    },
+    {
+        "sender_full_name": "Dart Wader",
+        "sender_phone_number": "5104029083",
+        "receiver_full_name": "John Marston",
+        "receiver_phone_number": "5104029083",
+        "parcel_size": "medium",
+        "declared_value": "1000",
+        "pick_up_time": "urgent",
+        "extra_services": {
+            "Ladder": {
+                "description": "Be careful",
+                "duration_or_quantity": "5"
+            },
+            "Packing and Unpacking": {
+                "description": "ARA",
+                "duration_or_quantity": "2 hours"
+            }
+        },
+        "promo_code": "50%",
+        "tips": "50",
+        "description": "Describe your shipment",
+        "photos": 0,
+        "signature": null,
+        "order_id": 4,
+        "unique_id": 6
+    }
+]
