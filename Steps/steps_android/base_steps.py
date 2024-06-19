@@ -4,14 +4,11 @@ import email
 import imaplib
 import inspect
 import re
-import time
-from _pydatetime import timedelta
 from email.header import decode_header
 
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 import json
 
 from selenium.common import NoSuchElementException, ElementClickInterceptedException
@@ -21,8 +18,6 @@ from appium import webdriver
 from appium.webdriver.common.appiumby import AppiumBy
 import subprocess
 import datetime
-from datetime import datetime
-from datetime import timedelta
 import os
 from appium.options.android import UiAutomator2Options
 from selenium.webdriver.support.wait import WebDriverWait
@@ -34,9 +29,7 @@ capabilities = dict(
     appPackage='com.snpx.customer',
     appActivity='com.snpx.customer.ui.SplashActivity',
     language='en',
-    locale='US',
-    newCommandTimeout=10000
-
+    locale='US'
 )
 
 appium_server_url = "http://localhost:4723"
@@ -49,7 +42,7 @@ class BaseFixture:
 
     def setUp(self, context):
         context.driver = webdriver.Remote(appium_server_url, options=UiAutomator2Options().load_capabilities(capabilities))
-        context.wait = WebDriverWait(context.driver, 10)
+        context.wait = WebDriverWait(context.driver, 15)
 
         file_path = '/Users/kolokob/PycharmProjects/Automation/Steps/steps_android/counter.txt'
         with open(file_path, 'r') as file:
@@ -245,7 +238,6 @@ class BaseFixture:
 
         with open(file_path, 'w') as json_file:
             json.dump(existing_data, json_file, indent=4)
-
     def get_password_from_email(self):
         username = "automation.senpex@outlook.com"
         password_for_email = "A27011975a"
@@ -262,45 +254,60 @@ class BaseFixture:
         mail.select("inbox")
 
         status, messages = mail.search(None, '(FROM "noreply@senpex.com")')
-        email_ids = messages[0].split()[-5:] 
+        email_ids = messages[0].split()
 
-        for email_id in reversed(email_ids): 
-            res, msg = mail.fetch(email_id, "(RFC822)")
-            for response_part in msg:
-                if isinstance(response_part, tuple):
-                    msg = email.message_from_bytes(response_part[1])
-                    subject, encoding = decode_header(msg["Subject"])[0]
-                    if isinstance(subject, bytes):
-                        subject = subject.decode(encoding if encoding else "utf-8")
-                    from_ = msg.get("From")
+        if email_ids:
+            email_date_pairs = []
+            for email_id in email_ids:
+                res, msg = mail.fetch(email_id, "(BODY[HEADER.FIELDS (DATE)])")
+                for response_part in msg:
+                    if isinstance(response_part, tuple):
+                        msg_date = email.message_from_bytes(response_part[1])["Date"]
+                        email_date_pairs.append((email_id, msg_date))
 
-                    print("Subject:", subject)
-                    print("From:", from_)
-                    print("=" * 100)
+            email_date_pairs.sort(key=lambda x: email.utils.parsedate_to_datetime(x[1]), reverse=True)
 
-                    if msg.is_multipart():
-                        for part in msg.walk():
-                            content_type = part.get_content_type()
-                            content_disposition = str(part.get("Content-Disposition"))
+            for email_id, _ in email_date_pairs:
+                res, msg = mail.fetch(email_id, "(RFC822)")
+                for response_part in msg:
+                    if isinstance(response_part, tuple):
+                        msg = email.message_from_bytes(response_part[1])
+                        subject, encoding = decode_header(msg["Subject"])[0]
+                        if isinstance(subject, bytes):
+                            subject = subject.decode(encoding if encoding else "utf-8")
+                        from_ = msg.get("From")
 
-                            if content_type == "text/plain" and "attachment" not in content_disposition:
-                                body = part.get_payload(decode=True).decode()
-                                print("Body:", body)
-                                match = re.search(r'Your password is (\d+)', body)
-                                if match:
-                                    password = match.group(1)
-                                    print(f"Extracted password: {password}")
-                                    break
-                    else:
-                        body = msg.get_payload(decode=True).decode()
-                        print("Body:", body)
-                        match = re.search(r'Your password is (\d+)', body)
-                        if match:
-                            password = match.group(1)
-                            print(f"Extracted password: {password}")
-                            break
-            if password:
-                break
+                        print("Subject:", subject)
+                        print("From:", from_)
+                        print("=" * 100)
+
+                        if msg.is_multipart():
+                            for part in msg.walk():
+                                content_type = part.get_content_type()
+                                content_disposition = str(part.get("Content-Disposition"))
+
+                                try:
+                                    body = part.get_payload(decode=True).decode()
+                                except:
+                                    pass
+
+                                if content_type == "text/plain" and "attachment" not in content_disposition:
+                                    print("Body:", body)
+                                    match = re.search(r'Your password is (\d+)', body)
+                                    if match:
+                                        password = match.group(1)
+                                        print(f"Extracted password: {password}")
+                                        break
+                        else:
+                            body = msg.get_payload(decode=True).decode()
+                            print("Body:", body)
+                            match = re.search(r'Your password is (\d+)', body)
+                            if match:
+                                password = match.group(1)
+                                print(f"Extracted password: {password}")
+                                break
+                if password:
+                    break
         else:
             print("No emails found from noreply@senpex.com")
 
@@ -366,161 +373,6 @@ class BaseFixture:
                 print("-" * 40)
         else:
             print("No differences found. Test passed.")
-
-    def get_link_from_email(self):
-        username = "automation.senpex@outlook.com"
-        password_for_email = "A27011975a"
-        link = None
-        max_wait_time = 600
-        poll_interval = 10
-
-        mail = imaplib.IMAP4_SSL("outlook.office365.com", 993)
-        try:
-            mail.login(username, password_for_email)
-            print("Login successful!")
-        except imaplib.IMAP4.error as e:
-            print(f"Failed to login: {e}")
-            exit(1)
-
-        while max_wait_time > 0:
-            mail.select("inbox")
-
-            status, messages = mail.search(None, '(FROM "noreply@senpex.com")')
-            email_ids = messages[0].split()
-
-            if email_ids:
-                latest_email_id = email_ids[-1]
-
-                res, msg = mail.fetch(latest_email_id, "(RFC822)")
-                for response_part in msg:
-                    if isinstance(response_part, tuple):
-                        msg = email.message_from_bytes(response_part[1])
-                        msg_date = email.utils.parsedate_to_datetime(msg['Date'])
-
-                        msg_date_naive = msg_date.replace(tzinfo=None)
-                        current_time_naive = datetime.now().replace(tzinfo=None)
-
-                        if current_time_naive - msg_date_naive <= timedelta(minutes=2):
-                            subject, encoding = decode_header(msg["Subject"])[0]
-                            if isinstance(subject, bytes):
-                                subject = subject.decode(encoding if encoding else "utf-8")
-                            from_ = msg.get("From")
-
-                            print("Subject:", subject)
-                            print("From:", from_)
-                            print("=" * 100)
-
-                            if msg.is_multipart():
-                                for part in msg.walk():
-                                    content_type = part.get_content_type()
-                                    content_disposition = str(part.get("Content-Disposition"))
-                                    if content_type == "text/plain" and "attachment" not in content_disposition:
-                                        body = part.get_payload(decode=True).decode()
-                                        match = re.search(
-                                            r'Please use the link below to process payment\s*(https?://\S+)', body)
-                                        if match:
-                                            link = match.group(1)
-                                            print(f"Extracted link: {link}")
-                                            break
-                            else:
-                                body = msg.get_payload(decode=True).decode()
-                                match = re.search(r'Please use the link below to process payment\s*(https?://\S+)',
-                                                  body)
-                                if match:
-                                    link = match.group(1)
-                                    print(f"Extracted link: {link}")
-                                    break
-
-                        if link:
-                            break
-                    if link:
-                        break
-
-            if link:
-                break
-
-            time.sleep(poll_interval)
-            max_wait_time -= poll_interval
-            print(f"Waiting for a new email. Time left: {max_wait_time} seconds")
-
-        mail.close()
-        mail.logout()
-
-        return link
-
-    def open_link_in_browser(self, link, card_number, date, cvv):
-        desired_capabilities = {
-            'platformName': 'Android',
-            'automationName': 'uiautomator2',
-            'deviceName': 'Android',
-            'browserName': 'Chrome',
-            'language': 'en',
-            'locale': 'US',
-            'chromedriver_autodownload': True
-        }
-
-        appium_server_url = "http://localhost:4723"
-
-        driver = webdriver.Remote(appium_server_url, options=UiAutomator2Options().load_capabilities(desired_capabilities))
-
-        try:
-            driver.get(link)
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((AppiumBy.TAG_NAME, 'body')))
-            print("Page loaded successfully")
-            driver.wait = WebDriverWait(driver, 15)
-            self.swipe_attr = Swiper(driver)
-            for i in range(4):
-                self.swipe_attr.scroll_down('long')
-            driver.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "(//iframe[starts-with(@name, '__privateStripeFrame') and string-length(@name)=string-length('__privateStripeFrame')+4])[1]"))).send_keys(card_number)
-            driver.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "(//iframe[starts-with(@name, '__privateStripeFrame') and string-length(@name)=string-length('__privateStripeFrame')+4])[2]"))).send_keys(date)
-            driver.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "(//iframe[starts-with(@name, '__privateStripeFrame') and string-length(@name)=string-length('__privateStripeFrame')+4])[3]"))).send_keys(cvv)
-            try:
-                driver.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//section/div[1]/div/div[4]/button'))).click()
-                time.sleep(1)
-                driver.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//section/div[1]/div/div[4]/button/span'))).click()
-            except:
-                pass
-
-        except Exception as e:
-            print(f"An error occurred: {e}")
-        finally:
-            driver.quit()
-
-    def open_app(self, context, app_package, app_activity):
-        desired_capabilities = dict(
-            platformName='Android',
-            automationName='uiautomator2',
-            deviceName='Android',
-            appPackage=app_package,
-            appActivity=app_activity,
-            language='en',
-            locale='US'
-        )
-
-        context.driver = webdriver.Remote(appium_server_url, options=UiAutomator2Options().load_capabilities(desired_capabilities))
-        context.wait = WebDriverWait(context.driver, 15)
-
-    def start_screen_recording(self, context, save_path, filename="test_recording.mp4"):
-        context.screen_recording_file = os.path.join(save_path, filename)
-        command = f"adb shell screenrecord /sdcard/{filename}"
-        context.screen_recording_process = subprocess.Popen(command, shell=True)
-        print(f"Started screen recording: {filename}")
-
-    def stop_screen_recording(self, context, save_path, filename="test_recording.mp4"):
-        context.screen_recording_process.terminate()
-        command = f"adb pull /sdcard/{filename} {context.screen_recording_file}"
-        subprocess.run(command, shell=True)
-        command = f"adb shell rm /sdcard/{filename}"
-        subprocess.run(command, shell=True)
-        print(f"Stopped screen recording and saved to: {context.screen_recording_file}")
-        self.convert_video_to_standard_format(context.screen_recording_file)
-
-    def convert_video_to_standard_format(self, filepath):
-        output_file = filepath.replace(".mp4", "_converted.mp4")
-        command = f"ffmpeg -i {filepath} -c:v libx264 -preset slow -crf 22 {output_file}"
-        subprocess.run(command, shell=True)
-        print(f"Converted video saved to: {output_file}")
-
 
 class Swiper:
 

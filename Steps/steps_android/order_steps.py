@@ -1,20 +1,26 @@
+import os
 import sys
-import string
-import random
+import time
+
+from behave import *
+
 from appium.webdriver.common.appiumby import AppiumBy
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from datetime import datetime, timedelta
-from behave import given, then
+from selenium.common import NoSuchElementException
+from selenium.common.exceptions import TimeoutException, StaleElementReferenceException, WebDriverException, NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
+from datetime import datetime
+from behave import given, when, then
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 from selenium.common.exceptions import StaleElementReferenceException, WebDriverException
 from tenacity import retry, wait_fixed, stop_after_attempt
 import time
 
-from Steps.steps_android.base_steps import Swiper, BaseFixture
+from Tests.Combined.LastMile.steps_android.base_steps import Swiper, BaseFixture
 base_fixture_attr = BaseFixture()
 now = datetime.now().day
 
-counter_file = '/Users/kolokob/PycharmProjects/Automation/Steps/steps_android/counter.txt'
+counter_file = '/Users/kolokob/PycharmProjects/Automation/Tests/Combined/LastMile/steps_android/counter.txt'
 
 with open(counter_file, 'r') as file:
     unique_number = int(file.read())
@@ -71,100 +77,10 @@ def step_login(context, address):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).send_keys(address)
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.view.ViewGroup[@resource-id="com.snpx.customer:id/place_item_view"])[1]'))).click()
 
-
-@then('I add "{pick_up_num}" pick-up\'s addresses and "{drop_off_num}" drop-off addresses')
-def step_login(context, pick_up_num, drop_off_num):
-    import random
-    import string
-    from selenium.webdriver.support import expected_conditions as EC
-    from selenium.common.exceptions import StaleElementReferenceException
-    from appium.webdriver.common.appiumby import AppiumBy
-
-    pick_up_num = int(pick_up_num)
-    drop_off_num = int(drop_off_num)
-
-    alphabet = list(string.ascii_lowercase)
-    vowels = 'aeiou'
-    consonants = ''.join([c for c in alphabet if c not in vowels])
-    combinations = [c + v for c in consonants for v in vowels]
-    addresses = alphabet + combinations
-    details = [''.join(random.choice(string.ascii_lowercase) for _ in range(random.randint(3, 8))) for _ in range(40)]
-    context.addresses_amount = max(pick_up_num, drop_off_num)
-    for i in range(max(pick_up_num, drop_off_num)):
-        if i < pick_up_num:
-            # Adding pick-up
-            if i > 0:
-                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnAddPickup'))).click()
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).click()
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).send_keys(addresses[i])
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.view.ViewGroup[@resource-id="com.snpx.customer:id/place_item_view"])[1]'))).click()
-
-            # Add location details
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocationDetails'))).send_keys(details[i])
-
-            # Click on 'Continue' button
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnContinue'))).click()
-
-        if i < drop_off_num:
-            # Adding drop-off
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnAddDropOff'))).click()
-            try:
-                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).click()
-                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).send_keys(addresses[pick_up_num + i])
-            except StaleElementReferenceException:
-                time.sleep(2)
-                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).send_keys(addresses[pick_up_num + i])
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.view.ViewGroup[@resource-id="com.snpx.customer:id/place_item_view"])[1]'))).click()
-
-            # Add location details
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocationDetails'))).send_keys(details[pick_up_num + i])
-
-            # Click on 'Continue' button
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnContinue'))).click()
-
-
-# @then('I add "{pick_up_num}" pick-up\'s addresses and "{drop_off_num}" drop-off addresses')
-# def step_login(context, pick_up_num, drop_off_num):
-#     alphabet = list(string.ascii_lowercase)
-#     vowels = 'aeiou'
-#     consonants = ''.join([c for c in alphabet if c not in vowels])
-#     combinations = [c + v for c in consonants for v in vowels]
-#     addresses = alphabet + combinations
-#     details = [''.join(random.choice(string.ascii_lowercase) for _ in range(random.randint(3, 8))) for _ in range(20)]
-#     for i in range(int(pick_up_num) + int(drop_off_num)-1):
-#         # Adding pick-up
-#         if i > 0:
-#             context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnAddPickup'))).click()
-#         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).click()
-#         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).send_keys(addresses[i])
-#         context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.view.ViewGroup[@resource-id="com.snpx.customer:id/place_item_view"])[1]'))).click()
-#
-#         # Add location details
-#         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocationDetails'))).send_keys(details[i])
-#
-#         # CLick on 'Continue' button
-#         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnContinue'))).click()
-#
-#         # Adding drop-off
-#         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnAddDropOff'))).click()
-#         try:
-#             context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).click()
-#             context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).send_keys(addresses[i+1])
-#         except StaleElementReferenceException:
-#             time.sleep(2)
-#             context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).send_keys(addresses[i+1])
-#         context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.view.ViewGroup[@resource-id="com.snpx.customer:id/place_item_view"])[1]'))).click()
-#
-#         # Add location details
-#         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocationDetails'))).send_keys(details[i+1])
-#
-#         # CLick on 'Continue' button
-#         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnContinue'))).click()
-
 @then('I select "{service}" service')
 def step_login(context, service):
     counter = 0
-    while counter < 5:
+    while counter < 3:
         try:
             if service != 'Last-mile delivery':
                 context.driver.find_element(by=AppiumBy.XPATH, value=f'//android.widget.TextView[@resource-id="com.snpx.customer:id/txtName" and @text="{service}"]').click()
@@ -197,48 +113,42 @@ def step_login(context, address):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.view.ViewGroup[@resource-id="com.snpx.customer:id/place_item_view"])[1]'))).click()
 
 
-@then('I add parcel size as "{parsel_size}" and "{vehicle_type}"')
-def step_login(context, parsel_size, vehicle_type):
+@then('I add parcel size as "{parsel_size}"')
+def step_login(context, parsel_size):
     context.parsel_size = parsel_size
-    if parsel_size == 'small':
-        # context.driver.find_element(by=AppiumBy.XPATH, value=f'(//android.widget.TextView[@resource-id="com.snpx.customer:id/lblVehicleType"])[1]').click()
-        pass
-    elif parsel_size == 'medium':
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//androidx.recyclerview.widget.RecyclerView[@resource-id="com.snpx.customer:id/recyclerViewSize"]/android.widget.RelativeLayout[{context.size[parsel_size]}]'))).click()
-        # context.driver.find_element(by=AppiumBy.XPATH, value=f'//androidx.recyclerview.widget.RecyclerView[@resource-id="com.snpx.customer:id/recyclerViewSize"]/android.widget.RelativeLayout[{context.size[parsel_size]}]').click()
-    elif parsel_size == 'large':
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//androidx.recyclerview.widget.RecyclerView[@resource-id="com.snpx.customer:id/recyclerViewSize"]/android.widget.RelativeLayout[{context.size[parsel_size]}]'))).click()
-        base_fixture_attr.choose_vehicle_type(context, vehicle_type)
-    elif parsel_size == 'heavy_load':
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//androidx.recyclerview.widget.RecyclerView[@resource-id="com.snpx.customer:id/recyclerViewSize"]/android.widget.RelativeLayout[{context.size[parsel_size]}]'))).click()
-        base_fixture_attr.choose_vehicle_type(context, vehicle_type)
-    elif parsel_size == 'custom size':
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//androidx.recyclerview.widget.RecyclerView[@resource-id="com.snpx.customer:id/recyclerViewSize"]/android.widget.RelativeLayout[{context.size[parsel_size]}]'))).click()
-        base_fixture_attr.put_info_for_custom_size(context, [2, 2, 2, 2])
-        base_fixture_attr.choose_vehicle_type(context, vehicle_type)
-    # if isinstance(parsel_size, dict):
-    #     parsel_key = list(parsel_size.keys())[0]
-    #
-    #     if parsel_key != "small":
-    #         if parsel_key == 'custom size':
-    #             for key, value in parsel_size.items():
-    #                 if not isinstance(value, list):
-    #                     raise TypeError("Check rules for creating parcel size")
-    #
-    #             context.put_info_for_custom_size(parsel_size)
-    #             context.choose_vehicle_type(parsel_size)
-    #
-    #         elif parsel_key == 'medium':
-    #             raise TypeError("For medium size, a vehicle type cannot be selected")
-    #
-    #         else:
-    #             context.driver.find_element(by=AppiumBy.XPATH, value=f'//androidx.recyclerview.widget.RecyclerView[@resource-id="com.snpx.customer:id/recyclerViewSize"]/android.widget.RelativeLayout[{context.size[parsel_key]}]').click()
-    #             context.choose_vehicle_type(parsel_size)
-    #
-    # elif parsel_size == 'custom size':
-    #     context.put_info_for_custom_size(parsel_size)
-    #     context.driver.find_element(by=AppiumBy.XPATH, value=f'//androidx.recyclerview.widget.RecyclerView[@resource-id="com.snpx.customer:id/recyclerViewSize"]/android.widget.RelativeLayout[1]').click()
 
+    if isinstance(parsel_size, dict):
+        parsel_key = list(parsel_size.keys())[0]
+
+        if parsel_key != "small":
+            if parsel_key == 'custom size':
+                for key, value in parsel_size.items():
+                    if not isinstance(value, list):
+                        raise TypeError("Check rules for creating parcel size")
+
+                context.put_info_for_custom_size(parsel_size)
+                context.choose_vehicle_type(parsel_size)
+
+            elif parsel_key == 'medium':
+                raise TypeError("For medium size, a vehicle type cannot be selected")
+
+            else:
+                context.driver.find_element(by=AppiumBy.XPATH,
+                                            value=f'//androidx.recyclerview.widget.RecyclerView[@resource-id="com.snpx.customer:id/recyclerViewSize"]/android.widget.RelativeLayout[{context.size[parsel_key]}]').click()
+                context.choose_vehicle_type(parsel_size)
+
+    elif parsel_size == 'custom size':
+        context.put_info_for_custom_size(parsel_size)
+        context.driver.find_element(by=AppiumBy.XPATH,
+                                    value=f'//androidx.recyclerview.widget.RecyclerView[@resource-id="com.snpx.customer:id/recyclerViewSize"]/android.widget.RelativeLayout[1]').click()
+
+    else:
+        if parsel_size == 'small':
+            context.driver.find_element(by=AppiumBy.XPATH,
+                                        value=f'//androidx.recyclerview.widget.RecyclerView[@resource-id="com.snpx.customer:id/recyclerViewSize"]/android.widget.RelativeLayout[{context.size[parsel_size]}]').click()
+        elif parsel_size != 'medium':
+            context.driver.find_element(by=AppiumBy.XPATH,
+                                        value=f'(//android.widget.TextView[@resource-id="com.snpx.customer:id/lblVehicleType"])[1]').click()
 # @then('I add parcel size as "{parsel_size}"')
 # def step_login(context, parsel_size):
 #     context.parsel_size = parsel_size
@@ -288,48 +198,51 @@ def step_login(context, value):
     context.declared_value = value
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtItemValue'))).send_keys(value)
 
-@then('I add pick-up time as "{pick_up_time}" with days "{days_or_date}" and time "{time}" for each and start date as "{start_date}"')
-def step_login(context, pick_up_time, days_or_date, time, start_date):
+@then('I add pick-up time as "{pick_up_time}"')
+def step_login(context, pick_up_time):
     context.pick_up_time = pick_up_time
-    if pick_up_time == 'urgent':
-        pass
+    if type(pick_up_time) != str:
+        date = datetime(year=datetime.now().year, month=datetime.now().month, day=list(pick_up_time.values())[0][-1])
+        context.formatted_date = date.strftime("%d %B %Y")
 
-    elif pick_up_time == 'scheduled':
-        # Select scheduled
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/rdbScheduled'))).click()
-        # Select the date on the calendar
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'(//android.widget.CheckedTextView[@content-desc="{days_or_date.split('/')[1].removeprefix('0')}"])[2]'))).click()
-        # Select time
-        base_fixture_attr.select_pick_up_time(context, time)
+        # Enter pick-up time
+        if pick_up_time == 'urgent':
+            pass
 
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnConfirm'))).click()
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnContinue'))).click()
-
-    elif pick_up_time == 'repeated':
-        # Select repeated
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/rdbRepeated'))).click()
-        counter = 0
-        for i in days_or_date.split(', '):
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, f"com.snpx.customer:id/chk{i}"))).click()
-            base_fixture_attr.select_pick_up_time(context, time.split(', ')[counter])
+        elif pick_up_time == 'scheduled' or list(pick_up_time)[0] == 'scheduled':
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/rdbScheduled'))).click()
+            if isinstance(pick_up_time, str):
+                context.wait.until(EC.element_to_be_clickable(
+                    (AppiumBy.ID, f'//android.widget.CheckedTextView[@content-desc="{now + 7}"]'))).click()
+            elif isinstance(pick_up_time, dict):
+                time.sleep(2)
+                context.date = context.driver.find_elements(by=AppiumBy.XPATH, value=f'//android.widget.CheckedTextView[@content-desc="{list(pick_up_time.values())[0][0]}"]')
+                if int(context.date[0].text) == int(list(pick_up_time.values())[0][0]):
+                    context.date[0].click()
+            context.select_pick_up_time(list(pick_up_time.values())[0][1])
             context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnConfirm'))).click()
-            counter += 1
 
-        formatted_date = datetime.strptime(start_date, "%d/%m/%Y").strftime("%d %B %Y")
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtStartDate'))).click()
-        current_year = context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'android:id/date_picker_header_year'))).text
-        current_month = context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'android:id/date_picker_header_date'))).text
-        current_year_month = current_year + ' ' + current_month
+        elif isinstance(pick_up_time, dict):
+            if list(pick_up_time.keys())[0] == 'repeated':
+                context.wait.until(
+                    EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/rdbRepeated'))).click()
+                for i in pick_up_time['repeated']:
+                    if isinstance(i, dict):
+                        for key, value in i.items():
+                            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, f"com.snpx.customer:id/chk{key}"))).click()
+                            context.select_pick_up_time(value)
+                            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnConfirm'))).click()
 
-        formatted_month = datetime.strptime(formatted_date, "%d %B %Y").strftime("%B")
-        current_month = datetime.strptime(current_year_month, "%Y %a, %b %d").strftime("%B")
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtStartDate'))).click()
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//android.view.View[@content-desc="{context.formatted_date}"]'))).click()
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'android:id/button1'))).click()
 
-        if formatted_month != current_month:
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, "android:id/next"))).click()
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnConfirm'))).click()
 
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//android.view.View[@content-desc="{formatted_date}"]'))).click()
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'android:id/button1'))).click()
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnConfirm'))).click()
+        elif isinstance(pick_up_time, str):
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "//android.widget.ScrollView/android.widget.LinearLayout/android.widget.RelativeLayout[1]"))).click()
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnConfirm'))).click()
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnConfirm'))).click()
 
 @then('I add extra services: "{extra_services}"')
 def step_login(context, extra_services):
@@ -363,9 +276,7 @@ def step_login(context, promo_code):
 @then('I add tips as "{tips}"')
 def step_login(context, tips):
     context.tips = tips
-    if tips == 'None' or tips is None:
-        pass
-    elif tips in [10, 15, 20, 25]:
+    if tips in [10, 15, 20, 25]:
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, f'com.snpx.customer:id/rdb{tips}'))).click()
     else:
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtTip'))).send_keys(tips)
@@ -379,14 +290,7 @@ def step_login(context, name):
 @then('I add description to the order as "{description}"')
 def step_login(context, description):
     context.order_description = description
-    counter = 0
-    while counter < 5:
-        try:
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtDescription'))).send_keys(description)
-            break
-        except StaleElementReferenceException:
-            counter += 1
-
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtDescription'))).send_keys(description)
 
 @then('I add "{amount}" photos')
 def step_login(context, amount):
@@ -399,13 +303,10 @@ def step_login(context, amount):
         context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'(//android.widget.ImageView[@content-desc="Image"])[{i}]'))).click()
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/menu_done'))).click()
 
-@then('I add signature "{decision}"')
-def step_login(context, decision):
-    if decision:
-        context.signature = True
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/chkSignature'))).click()
-    else:
-        context.signature = False
+@then('I add signature as required')
+def step_login(context):
+    context.signature = True
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/chkSignature'))).click()
 
 @then('I add sender full name as "{sender_full_name}"')
 def step_login(context, sender_full_name):
@@ -421,30 +322,6 @@ def step_login(context, sender_phone_number):
 def step_login(context, receiver_full_name):
     context.receiver_full_name = receiver_full_name
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtFullName'))).send_keys(receiver_full_name)
-
-@then('I add receiver\'s and sender\'s all info in all required fields')
-def step_login(context):
-    context.swipe_attr = Swiper(context)
-    context.sender_phone_number = "5104029082"
-    context.receiver_phone_number = "5104029084"
-    context.sender_full_name = "John Marston"
-    context.receiver_full_name = "Arthur Morgan"
-    counter = 1
-    a = context.addresses_amount
-    for i in range(context.addresses_amount + context.addresses_amount):
-        if counter == 1:
-            context.driver.swipe(300, 1380, 300, 330, 2000)
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtFullName'))).send_keys(context.sender_full_name)
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtPhone'))).send_keys(context.sender_phone_number)
-        context.driver.swipe(300, 1512, 300, 320, 2000)
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtFullName'))).send_keys(context.sender_full_name)
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtPhone'))).send_keys(context.sender_phone_number)
-        if counter == (context.addresses_amount + context.addresses_amount):
-            last_elements = context.wait.until(EC.visibility_of_all_elements_located((AppiumBy.ID, 'com.snpx.customer:id/txtPhone')))
-            last_elements[1].send_keys(context.sender_phone_number)
-        counter += 1
-
-
 
 @then('I add receiver phone number as "{receiver_phone_number}"')
 def step_login(context, receiver_phone_number):
@@ -564,7 +441,6 @@ def step_login(context):
 
 @then('I navigate the latest order')
 def step_login(context):
-    time.sleep(3)
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/navigation_orders'))).click()
 
     if base_fixture_attr.contains_repeated(context.pick_up_time):
