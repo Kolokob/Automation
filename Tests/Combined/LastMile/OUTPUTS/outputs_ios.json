@@ -202,5 +202,24 @@
         "pick_up_address": "1701 Airport Blvd, San Jose, CA 95110, USA",
         "apt_drop_off": "Sun",
         "drop_off_address": "416 Barber Ln, Milpitas, CA 95035, USA"
+    },
+    {
+        "order_id": "724587",
+        "order_name": "AUTO TEST №30; Name: Cockroaches",
+        "driver_salary": [
+            "$10.00",
+            "$48.25"
+        ],
+        "when": "As soon as possible",
+        "vehicle": "Car",
+        "size": "Small (1-25 Lbs)",
+        "distance": "6.14 miles",
+        "order_type": "Last-mile delivery",
+        "routes_amount": "1 routes",
+        "time_and_miles": "16m 25s · 6.14 mil",
+        "apt_pick_up": "Crater",
+        "pick_up_address": "1701 Airport Blvd, San Jose, CA 95110, USA",
+        "apt_drop_off": "Sun",
+        "drop_off_address": "416 Barber Ln, Milpitas, CA 95035, USA"
     }
 ]
