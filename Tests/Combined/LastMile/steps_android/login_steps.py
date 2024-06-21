@@ -19,6 +19,7 @@ def step_login(context, username, password):
 def step_login(context):
     context.new_password = base_fixture_attr.get_password_from_email()
     context.new_password = base_fixture_attr.get_password_from_email()
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLogin'))).click()
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtEmail'))).send_keys(f'automation.senpex+{unique_number}@outlook.com')
     context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtPassword').send_keys(context.new_password)
     context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/btnSignIn').click()

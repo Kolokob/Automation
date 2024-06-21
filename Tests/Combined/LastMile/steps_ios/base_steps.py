@@ -174,65 +174,65 @@ class BaseFixture:
 
 
 
-class Swiper:
-
-    def __init__(self, context):
-        self.context = context
-
-    def get_swipe_distance(self, swipe_intensity):
-        if swipe_intensity == 'short':
-            return 0.55, 0.45
-        elif swipe_intensity == 'medium':
-            return 0.60, 0.40
-        elif swipe_intensity == 'long':
-            return 0.65, 0.35
-        elif swipe_intensity == 'deep':
-            return 0.90, 0.10
-        else:
-            raise ValueError("Недопустимое значение для swipe_intensity. Используйте 'short', 'medium' или 'long'.")
-
-    def scroll_down(self, swipe_intensity='medium'):
-        size = self.context.get_window_size()
-        start_factor, end_factor = self.get_swipe_distance(swipe_intensity)
-        starty = size['height'] * start_factor
-        endy = size['height'] * end_factor
-        startx = size['width'] / 2
-        if swipe_intensity == 'deep':
-            self.context.swipe(startx, starty, startx, endy, 100)
-        else:
-            self.context.swipe(startx, starty, startx, endy, 400)
-
-
-    def scroll_right(self, swipe_intensity='medium'):
-        self.size = self.context.get_window_size()
-        start_factor, end_factor = self.get_swipe_distance(swipe_intensity)
-        startx = self.size['width'] * (1 - start_factor)
-        endx = self.size['width'] * start_factor
-        starty = self.size['height'] / 2
-        if swipe_intensity == 'deep':
-            self.context.swipe(startx, starty, startx, endx, 100)
-        else:
-            self.context.swipe(startx, starty, startx, endx, 400)
-
-    def scroll_left(self, swipe_intensity='medium'):
-        self.size = self.context.get_window_size()
-        start_factor, end_factor = self.get_swipe_distance(swipe_intensity)
-        startx = self.size['width'] * start_factor
-        endx = self.size['width'] * (1 - start_factor)
-        starty = self.size['height'] / 2
-        if swipe_intensity == 'deep':
-            self.context.swipe(startx, starty, startx, endx, 100)
-        else:
-            self.context.swipe(startx, starty, startx, endx, 400)
-
-    def scroll_up(self, swipe_intensity='medium'):
-        self.size = self.context.get_window_size()
-        start_factor, end_factor = self.get_swipe_distance(swipe_intensity)
-        starty = self.size['height'] * end_factor
-        endy = self.size['height'] * start_factor
-        startx = self.size['width'] / 2
-        if swipe_intensity == 'deep':
-            self.context.swipe(startx, starty, startx, endy, 100)
-        else:
-            self.context.swipe(startx, starty, startx, endy, 400)
+# class Swiper:
+#
+#     def __init__(self, context):
+#         self.context = context
+#
+#     def get_swipe_distance(self, swipe_intensity):
+#         if swipe_intensity == 'short':
+#             return 0.55, 0.45
+#         elif swipe_intensity == 'medium':
+#             return 0.60, 0.40
+#         elif swipe_intensity == 'long':
+#             return 0.65, 0.35
+#         elif swipe_intensity == 'deep':
+#             return 0.90, 0.10
+#         else:
+#             raise ValueError("Недопустимое значение для swipe_intensity. Используйте 'short', 'medium' или 'long'.")
+#
+#     def scroll_down(self, swipe_intensity='medium'):
+#         size = self.context.get_window_size()
+#         start_factor, end_factor = self.get_swipe_distance(swipe_intensity)
+#         starty = size['height'] * start_factor
+#         endy = size['height'] * end_factor
+#         startx = size['width'] / 2
+#         if swipe_intensity == 'deep':
+#             self.context.swipe(startx, starty, startx, endy, 100)
+#         else:
+#             self.context.swipe(startx, starty, startx, endy, 400)
+#
+#
+#     def scroll_right(self, swipe_intensity='medium'):
+#         self.size = self.context.get_window_size()
+#         start_factor, end_factor = self.get_swipe_distance(swipe_intensity)
+#         startx = self.size['width'] * (1 - start_factor)
+#         endx = self.size['width'] * start_factor
+#         starty = self.size['height'] / 2
+#         if swipe_intensity == 'deep':
+#             self.context.swipe(startx, starty, startx, endx, 100)
+#         else:
+#             self.context.swipe(startx, starty, startx, endx, 400)
+#
+#     def scroll_left(self, swipe_intensity='medium'):
+#         self.size = self.context.get_window_size()
+#         start_factor, end_factor = self.get_swipe_distance(swipe_intensity)
+#         startx = self.size['width'] * start_factor
+#         endx = self.size['width'] * (1 - start_factor)
+#         starty = self.size['height'] / 2
+#         if swipe_intensity == 'deep':
+#             self.context.swipe(startx, starty, startx, endx, 100)
+#         else:
+#             self.context.swipe(startx, starty, startx, endx, 400)
+#
+#     def scroll_up(self, swipe_intensity='medium'):
+#         self.size = self.context.get_window_size()
+#         start_factor, end_factor = self.get_swipe_distance(swipe_intensity)
+#         starty = self.size['height'] * end_factor
+#         endy = self.size['height'] * start_factor
+#         startx = self.size['width'] / 2
+#         if swipe_intensity == 'deep':
+#             self.context.swipe(startx, starty, startx, endy, 100)
+#         else:
+#             self.context.swipe(startx, starty, startx, endy, 400)
 

@@ -4,11 +4,13 @@ import email
 import imaplib
 import inspect
 import re
+import time
 from email.header import decode_header
 
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import json
 
 from selenium.common import NoSuchElementException, ElementClickInterceptedException
@@ -346,20 +348,16 @@ class BaseFixture:
         file1_path = '/Users/kolokob/PycharmProjects/Automation/Tests/Combined/LastMile/OUTPUTS/outputs_android.json'
         file2_path = '/Users/kolokob/PycharmProjects/Automation/Tests/Combined/LastMile/OUTPUTS/outputs_ios.json'
 
-        # Открытие и чтение JSON файлов
         with open(file1_path, 'r') as f1, open(file2_path, 'r') as f2:
             file1_list = json.load(f1)
             file2_list = json.load(f2)
 
-        # Извлечение последнего объекта из каждого списка
         file1 = file1_list[-1]
         file2 = file2_list[-1]
 
-        # Преобразование order_id второго файла в строку для сравнения
         if 'order_id' in file2:
             file2['order_id'] = str(file2['order_id'])
 
-        # Логическое сопоставление ключей
         logical_mapping = {
             "order_id": "order_id",
             "when": "pick_up_time",
@@ -370,7 +368,6 @@ class BaseFixture:
             "apt_drop_off": "receiver_full_name"
         }
 
-        # Сравнение значений
         for key1, key2 in logical_mapping.items():
             value1 = file1.get(key1)
             value2 = file2.get(key2)
@@ -383,7 +380,6 @@ class BaseFixture:
                     'file2_value': value2
                 })
 
-        # Красивый вывод различий
         if differences:
             print("Differences found:")
             for diff in differences:
@@ -394,6 +390,160 @@ class BaseFixture:
                 print("-" * 40)
         else:
             print("No differences found. Test passed.")
+
+    def get_link_from_email(self):
+        username = "automation.senpex@outlook.com"
+        password_for_email = "A27011975a"
+        link = None
+
+        mail = imaplib.IMAP4_SSL("outlook.office365.com", 993)
+        try:
+            mail.login(username, password_for_email)
+            print("Login successful!")
+        except imaplib.IMAP4.error as e:
+            print(f"Failed to login: {e}")
+            exit(1)
+
+        mail.select("inbox")
+
+        status, messages = mail.search(None, '(FROM "noreply@senpex.com")')
+        email_ids = messages[0].split()
+
+        if email_ids:
+            email_date_pairs = []
+            for email_id in email_ids:
+                res, msg = mail.fetch(email_id, "(BODY[HEADER.FIELDS (DATE)])")
+                for response_part in msg:
+                    if isinstance(response_part, tuple):
+                        msg_date = email.message_from_bytes(response_part[1])["Date"]
+                        email_date_pairs.append((email_id, msg_date))
+
+            email_date_pairs.sort(key=lambda x: email.utils.parsedate_to_datetime(x[1]), reverse=True)
+
+            for email_id, _ in email_date_pairs:
+                res, msg = mail.fetch(email_id, "(RFC822)")
+                for response_part in msg:
+                    if isinstance(response_part, tuple):
+                        msg = email.message_from_bytes(response_part[1])
+                        subject, encoding = decode_header(msg["Subject"])[0]
+                        if isinstance(subject, bytes):
+                            subject = subject.decode(encoding if encoding else "utf-8")
+                        from_ = msg.get("From")
+
+                        print("Subject:", subject)
+                        print("From:", from_)
+                        print("=" * 100)
+
+                        if msg.is_multipart():
+                            for part in msg.walk():
+                                content_type = part.get_content_type()
+                                content_disposition = str(part.get("Content-Disposition"))
+
+                                try:
+                                    body = part.get_payload(decode=True).decode()
+                                except:
+                                    pass
+
+                                if content_type == "text/plain" and "attachment" not in content_disposition:
+                                    print("Body:", body)
+                                    match = re.search(r'Please use the link below to process payment\s*(https?://\S+)',
+                                                      body)
+                                    if match:
+                                        link = match.group(1)
+                                        print(f"Extracted link: {link}")
+                                        break
+                        else:
+                            body = msg.get_payload(decode=True).decode()
+                            print("Body:", body)
+                            match = re.search(r'Please use the link below to process payment\s*(https?://\S+)', body)
+                            if match:
+                                link = match.group(1)
+                                print(f"Extracted link: {link}")
+                                break
+                if link:
+                    break
+        else:
+            print("No emails found from noreply@senpex.com")
+
+        mail.close()
+        mail.logout()
+
+        return link
+
+    def open_link_in_browser(self, link, card_number, date, cvv):
+        desired_capabilities = {
+            'platformName': 'Android',
+            'automationName': 'uiautomator2',
+            'deviceName': 'Android',
+            'browserName': 'Chrome',
+            'language': 'en',
+            'locale': 'US',
+            'chromedriver_autodownload': True
+        }
+
+        appium_server_url = "http://localhost:4723"
+
+        driver = webdriver.Remote(appium_server_url, options=UiAutomator2Options().load_capabilities(desired_capabilities))
+
+        try:
+            driver.get(link)
+            WebDriverWait(driver, 10).until(EC.presence_of_element_located((AppiumBy.TAG_NAME, 'body')))
+            print("Page loaded successfully")
+            driver.wait = WebDriverWait(driver, 15)
+            self.swipe_attr = Swiper(driver)
+            for i in range(4):
+                self.swipe_attr.scroll_down('long')
+            driver.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "(//iframe[starts-with(@name, '__privateStripeFrame') and string-length(@name)=string-length('__privateStripeFrame')+4])[1]"))).send_keys(card_number)
+            driver.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "(//iframe[starts-with(@name, '__privateStripeFrame') and string-length(@name)=string-length('__privateStripeFrame')+4])[2]"))).send_keys(date)
+            driver.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "(//iframe[starts-with(@name, '__privateStripeFrame') and string-length(@name)=string-length('__privateStripeFrame')+4])[3]"))).send_keys(cvv)
+            try:
+                driver.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//section/div[1]/div/div[4]/button'))).click()
+                time.sleep(1)
+                driver.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//section/div[1]/div/div[4]/button/span'))).click()
+            except:
+                pass
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+        finally:
+            driver.quit()
+
+    def open_app(self, context, app_package, app_activity):
+        desired_capabilities = dict(
+            platformName='Android',
+            automationName='uiautomator2',
+            deviceName='Android',
+            appPackage=app_package,
+            appActivity=app_activity,
+            language='en',
+            locale='US'
+        )
+
+        context.driver = webdriver.Remote(appium_server_url, options=UiAutomator2Options().load_capabilities(desired_capabilities))
+        context.wait = WebDriverWait(context.driver, 15)
+
+    def start_screen_recording(self, context, save_path, filename="test_recording.mp4"):
+        context.screen_recording_file = os.path.join(save_path, filename)
+        command = f"adb shell screenrecord /sdcard/{filename}"
+        context.screen_recording_process = subprocess.Popen(command, shell=True)
+        print(f"Started screen recording: {filename}")
+
+    def stop_screen_recording(self, context, save_path, filename="test_recording.mp4"):
+        context.screen_recording_process.terminate()
+        command = f"adb pull /sdcard/{filename} {context.screen_recording_file}"
+        subprocess.run(command, shell=True)
+        command = f"adb shell rm /sdcard/{filename}"
+        subprocess.run(command, shell=True)
+        print(f"Stopped screen recording and saved to: {context.screen_recording_file}")
+        self.convert_video_to_standard_format(context.screen_recording_file)
+
+    def convert_video_to_standard_format(self, filepath):
+        output_file = filepath.replace(".mp4", "_converted.mp4")
+        command = f"ffmpeg -i {filepath} -c:v libx264 -preset slow -crf 22 {output_file}"
+        subprocess.run(command, shell=True)
+        print(f"Converted video saved to: {output_file}")
+
+
 class Swiper:
 
     def __init__(self, context):
