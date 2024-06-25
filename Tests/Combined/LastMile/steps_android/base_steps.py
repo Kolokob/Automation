@@ -276,11 +276,10 @@ class BaseFixture:
 
         mail.select("inbox")
 
-        # Получить только последние 5 писем
         status, messages = mail.search(None, '(FROM "noreply@senpex.com")')
-        email_ids = messages[0].split()[-5:]  # Получаем последние 5 писем
+        email_ids = messages[0].split()[-5:] 
 
-        for email_id in reversed(email_ids):  # Проверяем последние письма сначала
+        for email_id in reversed(email_ids): 
             res, msg = mail.fetch(email_id, "(RFC822)")
             for response_part in msg:
                 if isinstance(response_part, tuple):
@@ -387,8 +386,8 @@ class BaseFixture:
         username = "automation.senpex@outlook.com"
         password_for_email = "A27011975a"
         link = None
-        max_wait_time = 600  # Максимальное время ожидания в секундах
-        poll_interval = 30  # Интервал опроса в секундах
+        max_wait_time = 600
+        poll_interval = 10
 
         mail = imaplib.IMAP4_SSL("outlook.office365.com", 993)
         try:
