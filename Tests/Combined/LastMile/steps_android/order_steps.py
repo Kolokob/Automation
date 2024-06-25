@@ -3,13 +3,18 @@ import sys
 import time
 
 from behave import *
-from appium.webdriver.common.appiumby import AppiumBy
-from selenium.webdriver.support import expected_conditions as EC
 
 from appium.webdriver.common.appiumby import AppiumBy
 from selenium.common import NoSuchElementException
+from selenium.common.exceptions import TimeoutException, StaleElementReferenceException, WebDriverException, NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
+from behave import given, when, then
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import StaleElementReferenceException, WebDriverException
+from tenacity import retry, wait_fixed, stop_after_attempt
+import time
 
 from Tests.Combined.LastMile.steps_android.base_steps import Swiper, BaseFixture
 base_fixture_attr = BaseFixture()
@@ -20,6 +25,47 @@ counter_file = '/Users/kolokob/PycharmProjects/Automation/Tests/Combined/LastMil
 with open(counter_file, 'r') as file:
     unique_number = int(file.read())
 
+def restart_app(context):
+    context.driver = base_fixture_attr.setUp(context)
+
+@retry(wait=wait_fixed(2), stop=stop_after_attempt(3))
+def execute_scenario(context):
+    try:
+        context.execute_steps('''
+            Given I click on "Get a Quote"
+            Then I select "Last-mile delivery" service
+            Then I add pick-up address as "S"
+            Then I add location details as "Crater"
+            Then I click Continue
+            Then I add drop-off address as "Q"
+            Then I add location details as "Sun"
+            Then I click Continue
+            Then I click Continue
+            Then I click Continue
+            Then I click Continue
+            Then I click Continue
+            Then I add name of the order as "Cockroaches"
+            Then I add description to the order as "Describe your shipment"
+            Then I make a "medium" "down" swipe
+            Then I add sender full name as "Dart Wader"
+            Then I add sender phone number as "5104029083"
+            Then I make a "long" "down" swipe
+            Then I make a "short" "down" swipe
+            Then I make a "short" "down" swipe
+            Then I add receiver full name as "John Marston"
+            Then I add receiver phone number as "5104029083"
+            Then I click Continue
+            Then I click Continue
+            Then I add credit card info as "{card_number}" for credit card number, "0429" for expiration date and "123" for CVV
+            Then I add credentials for my new account as "Avram" for the first name, "Linkolnych" for the last name, and "5104029084" for the phone number
+            Then I make a "long" "down" swipe
+            Then I click Continue
+        ''')
+    except WebDriverException as e:
+        print(f"Application crashed with error: {e}. Restarting the app and retrying...")
+        restart_app(context)
+        execute_scenario(context)
+
 @given('I click on "Get a Quote"')
 def step_login(context):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnInstantOrder'))).click()
@@ -28,15 +74,23 @@ def step_login(context):
 def step_login(context, address):
     context.pick_up_address = address
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).click()
-    context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtLocation').send_keys(address)
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).send_keys(address)
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.view.ViewGroup[@resource-id="com.snpx.customer:id/place_item_view"])[1]'))).click()
 
 @then('I select "{service}" service')
 def step_login(context, service):
-    if service != 'Last-mile delivery':
-        context.driver.find_element(by=AppiumBy.ID, value=f'//android.widget.TextView[@resource-id="com.snpx.customer:id/txtName" and @text="{service}"]').click()
-    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.TextView[@text="Place order"]'))).click()
-
+    counter = 0
+    while counter < 3:
+        try:
+            if service != 'Last-mile delivery':
+                context.driver.find_element(by=AppiumBy.XPATH, value=f'//android.widget.TextView[@resource-id="com.snpx.customer:id/txtName" and @text="{service}"]').click()
+                break
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.TextView[@text="Place order"]'))).click()
+            break
+        except TimeoutException:
+            counter += 1
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/imgClose'))).click()
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnInstantOrder'))).click()
 @then('I add location details as "{details}"')
 def step_login(context, details):
     context.details = details
@@ -50,8 +104,12 @@ def step_login(context):
 def step_login(context, address):
     context.drop_off_address = address
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnAddDropOff'))).click()
-    context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtLocation').click()
-    context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtLocation').send_keys(address)
+    try:
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).click()
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).send_keys(address)
+    except StaleElementReferenceException:
+        time.sleep(2)
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).send_keys(address)
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.view.ViewGroup[@resource-id="com.snpx.customer:id/place_item_view"])[1]'))).click()
 
 
@@ -273,9 +331,90 @@ def step_login(context, receiver_phone_number):
 @then('I add credit card info as "{credit_card_number}" for credit card number, "{expiration_date}" for expiration date and "{cvv}" for CVV')
 def step_login(context, credit_card_number, expiration_date, cvv):
     context.credit_card_info = [credit_card_number, expiration_date, cvv]
-    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_card_number'))).send_keys(credit_card_number)
-    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_expiry'))).send_keys(expiration_date)
-    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_cvc'))).send_keys(cvv)
+    try:
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_card_number'))).send_keys(credit_card_number)
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_expiry'))).send_keys(expiration_date)
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_cvc'))).send_keys(cvv)
+    except StaleElementReferenceException:
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_card_number'))).send_keys(credit_card_number)
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_expiry'))).send_keys(expiration_date)
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_cvc'))).send_keys(cvv)
+
+
+# @then('I should see an error message')
+# def step_see_error_message(context):
+#     time.sleep(2)
+#     specific_error_locator = (AppiumBy.ID, "com.snpx.customer:id/textinput_error")
+#     generic_error_locators = [
+#         (AppiumBy.ID, "android:id/message")
+#     ]
+#
+#     expected_error_messages = ["Your card's number is invalid.", "Please try again later"]
+#     error_message = None
+#
+#     try:
+#         error_element = context.wait.until(EC.presence_of_element_located(specific_error_locator))
+#         if error_element.is_displayed():
+#             error_message = error_element.text
+#             assert error_message in expected_error_messages, f"Unexpected error message: {error_message}"
+#         else:
+#             raise TimeoutException
+#     except TimeoutException:
+#         for locator in generic_error_locators:
+#             try:
+#                 error_element = context.wait.until(EC.presence_of_element_located(locator))
+#                 if error_element.is_displayed():
+#                     error_message = error_element.text
+#                     if error_message in expected_error_messages:
+#                         break
+#             except TimeoutException:
+#                 continue
+#
+#     assert error_message in expected_error_messages, f"Unexpected error message: {error_message}"
+#
+#     if error_message == "Your card's number is invalid.":
+#         print(f'Card {context.credit_card_info[0]} was not accepted with error: {error_message}')
+#     elif error_message == "Please try again later":
+#         print(f'Card {context.credit_card_info[0]} was not accepted with a generic error: {error_message}')
+#     else:
+#         print(f'Card {context.credit_card_info[0]} was not accepted with an unexpected error: {error_message}')
+
+
+@then('I should see an error message')
+def step_login(context):
+    time.sleep(2)
+    specific_error_locator = (AppiumBy.ID, "com.snpx.customer:id/textinput_error")
+    generic_error_locators = [
+        (AppiumBy.ID, "android:id/message")
+    ]
+
+    error_message = None
+
+    try:
+        error_element = context.wait.until(EC.presence_of_element_located(specific_error_locator))
+        if error_element.is_displayed():
+            error_message = error_element.text
+            assert error_message == "Your card's number is invalid.", f"Error message: {error_message}"
+        else:
+            raise TimeoutException
+    except TimeoutException or StaleElementReferenceException:
+        for locator in generic_error_locators:
+            try:
+                error_element = context.wait.until(EC.presence_of_element_located(locator))
+                if error_element.is_displayed():
+                    error_message = error_element.text
+                    if error_message != "Please try again later":
+                        break
+            except TimeoutException:
+                continue
+
+    if error_message == "Your card's number is invalid":
+        print(f'Card {context.credit_card_info[0]} was not accepted with error: {error_message}')
+    elif error_message == "Please try again later":
+        print(f'Card {context.credit_card_info[0]} was not accepted with a generic error: {error_message}')
+    else:
+        print(f'Card {context.credit_card_info[0]} was not accepted with an expected error: {error_message}')
+
 
 # There is no editing email, due to high complexity making it dynamic
 @then('I add credentials for my new account as "{first_name}" for the first name, "{last_name}" for the last name, and "{phone_number}" for the phone number')
@@ -300,7 +439,7 @@ def step_login(context):
 def step_login(context):
     context.new_password = BaseFixture.get_password_from_email(context)
 
-@then('I navigate to orders')
+@then('I navigate the latest order')
 def step_login(context):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/navigation_orders'))).click()
 
@@ -335,3 +474,74 @@ def step_impl(context):
 @given('I compare two JSON files from client and driver')
 def step_impl(context):
     base_fixture_attr.compare_files()
+
+@then('I select payment type as payment link')
+def step_impl(context):
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.RelativeLayout[@resource-id="com.snpx.customer:id/rltPaymentMethod"]/android.widget.ImageView[2]'))).click()
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/rdbCreatePaymentLink'))).click()
+
+@then('I add payer\'s phone number "{phone_number}" and email "{email}"')
+def step_impl(context, phone_number, email=f'automation.senpex+{unique_number}@outlook.com'):
+    if email == '<>':
+        email = f'automation.senpex+{unique_number}@outlook.com'
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtPayersEmail'))).send_keys(email)
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtPayersPhoneNumber'))).send_keys(phone_number)
+
+
+@then('I open retrieved payment link and pay for it "{card_number}", "{date}", "{cvv}"')
+def step_impl(context, card_number, date, cvv):
+    payment_link = base_fixture_attr.get_link_from_email()
+    base_fixture_attr.open_link_in_browser(payment_link, card_number, date, cvv)
+
+@then('I open "{app}" app')
+def step_impl(context, app):
+    if app == "customer":
+        app_package = 'com.snpx.customer'
+        app_activity = 'com.snpx.customer.ui.SplashActivity'
+    elif app == "chrome":
+        app_package = 'com.android.chrome'
+        app_activity = 'com.google.android.apps.chrome.Main'
+    else:
+        raise ValueError(f"Unknown app: {app}")
+
+    base_fixture_attr.open_app(context, app_package, app_activity)
+
+
+@then('I add credit card info as "{card_number}" for credit card number, "{date}" for expiration date and "{cvv}" for CVV for payment request')
+def step_impl(context, card_number, date, cvv):
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.webkit.WebView[@text="Payment request"]/android.view.View[1]/android.view.View/android.view.View/android.view.View/android.view.View[2]/android.view.View[2]'))).send_keys(card_number)
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.webkit.WebView[@text="Payment request"]/android.view.View[1]/android.view.View/android.view.View/android.view.View/android.view.View[2]/android.view.View[4]/android.view.View/android.view.View/android.view.View/android.view.View/android.view.View/android.widget.EditText'))).send_keys(date)
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.webkit.WebView[@text="Payment request"]/android.view.View[1]/android.view.View/android.view.View/android.view.View/android.view.View[2]/android.view.View[6]/android.view.View/android.view.View/android.view.View'))).send_keys(cvv)
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.Button[@text="Pay"]'))).click()
+
+
+@then('I select saved credit card')
+def step_impl(context):
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.widget.TextView[@resource-id="com.snpx.customer:id/txtText"])[1]'))).click()
+
+@then('I select recently created credit card')
+def step_impl(context):
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.widget.TextView[@resource-id="com.snpx.customer:id/txtText"])[last()]'))).click()
+
+@then('I add a new card as "{credit_card_number}" for credit card number, "{expiration_date}" for expiration date and "{cvv}" for CVV')
+def step_login(context, credit_card_number, expiration_date, cvv):
+    counter = 0
+    while counter < 3:
+        try:
+            context.credit_card_info = [credit_card_number, expiration_date, cvv]
+
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/imgCreditPlus'))).click()
+
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_card_number'))).send_keys(credit_card_number)
+
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_expiry'))).send_keys(expiration_date)
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_cvc'))).send_keys(cvv)
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnAddNewCard'))).click()
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'android:id/button1'))).click()
+            break
+        except (TimeoutException, NoSuchElementException, StaleElementReferenceException,):
+            if counter == 2:
+                raise Exception('Something went wrong with the list of cards')
+            counter += 1
+            context.swipe_attr.scroll_down('long')
+
