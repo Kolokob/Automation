@@ -1,7 +1,6 @@
-from appium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
 from Tests.Combined.LastMile.steps_android import base_steps as android_base
 from Tests.Combined.LastMile.steps_ios import base_steps as ios_base
+
 
 def before_all(context):
     context.android_base_fixture = android_base.BaseFixture()

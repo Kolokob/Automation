@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 
 from behave import *
@@ -463,7 +464,12 @@ def step_impl(context, seconds):
 
 @then('I enjoy my work')
 def step_impl(context):
-    print("Test passed")
+    end_time = time.time() + 5
+    while time.time() < end_time:
+        for dots in range(4):
+            sys.stdout.write(f"\r{'Enjoying my work'}{'.' * dots}   ")
+            sys.stdout.flush()
+            time.sleep(0.3)
 
 @given('I compare two JSON files from client and driver')
 def step_impl(context):
