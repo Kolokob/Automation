@@ -5,6 +5,7 @@ import imaplib
 import inspect
 import re
 import time
+from _pydatetime import timedelta
 from email.header import decode_header
 
 from appium import webdriver
@@ -20,6 +21,8 @@ from appium import webdriver
 from appium.webdriver.common.appiumby import AppiumBy
 import subprocess
 import datetime
+from datetime import datetime
+from datetime import timedelta
 import os
 from appium.options.android import UiAutomator2Options
 from selenium.webdriver.support.wait import WebDriverWait
@@ -31,7 +34,9 @@ capabilities = dict(
     appPackage='com.snpx.customer',
     appActivity='com.snpx.customer.ui.SplashActivity',
     language='en',
-    locale='US'
+    locale='US',
+    newCommandTimeout=10000
+
 )
 
 appium_server_url = "http://localhost:4723"
@@ -44,7 +49,7 @@ class BaseFixture:
 
     def setUp(self, context):
         context.driver = webdriver.Remote(appium_server_url, options=UiAutomator2Options().load_capabilities(capabilities))
-        context.wait = WebDriverWait(context.driver, 15)
+        context.wait = WebDriverWait(context.driver, 10)
 
         file_path = '/Users/kolokob/PycharmProjects/Automation/Tests/Combined/LastMile/steps_android/counter.txt'
         with open(file_path, 'r') as file:
@@ -255,6 +260,7 @@ class BaseFixture:
 
         with open(file_path, 'w') as json_file:
             json.dump(existing_data, json_file, indent=4)
+
     def get_password_from_email(self):
         username = "automation.senpex@outlook.com"
         password_for_email = "A27011975a"
@@ -270,61 +276,47 @@ class BaseFixture:
 
         mail.select("inbox")
 
+        # Получить только последние 5 писем
         status, messages = mail.search(None, '(FROM "noreply@senpex.com")')
-        email_ids = messages[0].split()
+        email_ids = messages[0].split()[-5:]  # Получаем последние 5 писем
 
-        if email_ids:
-            email_date_pairs = []
-            for email_id in email_ids:
-                res, msg = mail.fetch(email_id, "(BODY[HEADER.FIELDS (DATE)])")
-                for response_part in msg:
-                    if isinstance(response_part, tuple):
-                        msg_date = email.message_from_bytes(response_part[1])["Date"]
-                        email_date_pairs.append((email_id, msg_date))
+        for email_id in reversed(email_ids):  # Проверяем последние письма сначала
+            res, msg = mail.fetch(email_id, "(RFC822)")
+            for response_part in msg:
+                if isinstance(response_part, tuple):
+                    msg = email.message_from_bytes(response_part[1])
+                    subject, encoding = decode_header(msg["Subject"])[0]
+                    if isinstance(subject, bytes):
+                        subject = subject.decode(encoding if encoding else "utf-8")
+                    from_ = msg.get("From")
 
-            email_date_pairs.sort(key=lambda x: email.utils.parsedate_to_datetime(x[1]), reverse=True)
+                    print("Subject:", subject)
+                    print("From:", from_)
+                    print("=" * 100)
 
-            for email_id, _ in email_date_pairs:
-                res, msg = mail.fetch(email_id, "(RFC822)")
-                for response_part in msg:
-                    if isinstance(response_part, tuple):
-                        msg = email.message_from_bytes(response_part[1])
-                        subject, encoding = decode_header(msg["Subject"])[0]
-                        if isinstance(subject, bytes):
-                            subject = subject.decode(encoding if encoding else "utf-8")
-                        from_ = msg.get("From")
+                    if msg.is_multipart():
+                        for part in msg.walk():
+                            content_type = part.get_content_type()
+                            content_disposition = str(part.get("Content-Disposition"))
 
-                        print("Subject:", subject)
-                        print("From:", from_)
-                        print("=" * 100)
-
-                        if msg.is_multipart():
-                            for part in msg.walk():
-                                content_type = part.get_content_type()
-                                content_disposition = str(part.get("Content-Disposition"))
-
-                                try:
-                                    body = part.get_payload(decode=True).decode()
-                                except:
-                                    pass
-
-                                if content_type == "text/plain" and "attachment" not in content_disposition:
-                                    print("Body:", body)
-                                    match = re.search(r'Your password is (\d+)', body)
-                                    if match:
-                                        password = match.group(1)
-                                        print(f"Extracted password: {password}")
-                                        break
-                        else:
-                            body = msg.get_payload(decode=True).decode()
-                            print("Body:", body)
-                            match = re.search(r'Your password is (\d+)', body)
-                            if match:
-                                password = match.group(1)
-                                print(f"Extracted password: {password}")
-                                break
-                if password:
-                    break
+                            if content_type == "text/plain" and "attachment" not in content_disposition:
+                                body = part.get_payload(decode=True).decode()
+                                print("Body:", body)
+                                match = re.search(r'Your password is (\d+)', body)
+                                if match:
+                                    password = match.group(1)
+                                    print(f"Extracted password: {password}")
+                                    break
+                    else:
+                        body = msg.get_payload(decode=True).decode()
+                        print("Body:", body)
+                        match = re.search(r'Your password is (\d+)', body)
+                        if match:
+                            password = match.group(1)
+                            print(f"Extracted password: {password}")
+                            break
+            if password:
+                break
         else:
             print("No emails found from noreply@senpex.com")
 
@@ -395,6 +387,8 @@ class BaseFixture:
         username = "automation.senpex@outlook.com"
         password_for_email = "A27011975a"
         link = None
+        max_wait_time = 600  # Максимальное время ожидания в секундах
+        poll_interval = 30  # Интервал опроса в секундах
 
         mail = imaplib.IMAP4_SSL("outlook.office365.com", 993)
         try:
@@ -404,66 +398,68 @@ class BaseFixture:
             print(f"Failed to login: {e}")
             exit(1)
 
-        mail.select("inbox")
+        while max_wait_time > 0:
+            mail.select("inbox")
 
-        status, messages = mail.search(None, '(FROM "noreply@senpex.com")')
-        email_ids = messages[0].split()
+            status, messages = mail.search(None, '(FROM "noreply@senpex.com")')
+            email_ids = messages[0].split()
 
-        if email_ids:
-            email_date_pairs = []
-            for email_id in email_ids:
-                res, msg = mail.fetch(email_id, "(BODY[HEADER.FIELDS (DATE)])")
-                for response_part in msg:
-                    if isinstance(response_part, tuple):
-                        msg_date = email.message_from_bytes(response_part[1])["Date"]
-                        email_date_pairs.append((email_id, msg_date))
+            if email_ids:
+                latest_email_id = email_ids[-1]
 
-            email_date_pairs.sort(key=lambda x: email.utils.parsedate_to_datetime(x[1]), reverse=True)
-
-            for email_id, _ in email_date_pairs:
-                res, msg = mail.fetch(email_id, "(RFC822)")
+                res, msg = mail.fetch(latest_email_id, "(RFC822)")
                 for response_part in msg:
                     if isinstance(response_part, tuple):
                         msg = email.message_from_bytes(response_part[1])
-                        subject, encoding = decode_header(msg["Subject"])[0]
-                        if isinstance(subject, bytes):
-                            subject = subject.decode(encoding if encoding else "utf-8")
-                        from_ = msg.get("From")
+                        msg_date = email.utils.parsedate_to_datetime(msg['Date'])
 
-                        print("Subject:", subject)
-                        print("From:", from_)
-                        print("=" * 100)
+                        # Преобразуем оба объекта datetime в наивные
+                        msg_date_naive = msg_date.replace(tzinfo=None)
+                        current_time_naive = datetime.now().replace(tzinfo=None)
 
-                        if msg.is_multipart():
-                            for part in msg.walk():
-                                content_type = part.get_content_type()
-                                content_disposition = str(part.get("Content-Disposition"))
+                        # Check if the email was received within the last 2 minutes
+                        if current_time_naive - msg_date_naive <= timedelta(minutes=2):
+                            subject, encoding = decode_header(msg["Subject"])[0]
+                            if isinstance(subject, bytes):
+                                subject = subject.decode(encoding if encoding else "utf-8")
+                            from_ = msg.get("From")
 
-                                try:
-                                    body = part.get_payload(decode=True).decode()
-                                except:
-                                    pass
+                            print("Subject:", subject)
+                            print("From:", from_)
+                            print("=" * 100)
 
-                                if content_type == "text/plain" and "attachment" not in content_disposition:
-                                    print("Body:", body)
-                                    match = re.search(r'Please use the link below to process payment\s*(https?://\S+)',
-                                                      body)
-                                    if match:
-                                        link = match.group(1)
-                                        print(f"Extracted link: {link}")
-                                        break
-                        else:
-                            body = msg.get_payload(decode=True).decode()
-                            print("Body:", body)
-                            match = re.search(r'Please use the link below to process payment\s*(https?://\S+)', body)
-                            if match:
-                                link = match.group(1)
-                                print(f"Extracted link: {link}")
-                                break
-                if link:
-                    break
-        else:
-            print("No emails found from noreply@senpex.com")
+                            if msg.is_multipart():
+                                for part in msg.walk():
+                                    content_type = part.get_content_type()
+                                    content_disposition = str(part.get("Content-Disposition"))
+                                    if content_type == "text/plain" and "attachment" not in content_disposition:
+                                        body = part.get_payload(decode=True).decode()
+                                        match = re.search(
+                                            r'Please use the link below to process payment\s*(https?://\S+)', body)
+                                        if match:
+                                            link = match.group(1)
+                                            print(f"Extracted link: {link}")
+                                            break
+                            else:
+                                body = msg.get_payload(decode=True).decode()
+                                match = re.search(r'Please use the link below to process payment\s*(https?://\S+)',
+                                                  body)
+                                if match:
+                                    link = match.group(1)
+                                    print(f"Extracted link: {link}")
+                                    break
+
+                        if link:
+                            break
+                    if link:
+                        break
+
+            if link:
+                break
+
+            time.sleep(poll_interval)
+            max_wait_time -= poll_interval
+            print(f"Waiting for a new email. Time left: {max_wait_time} seconds")
 
         mail.close()
         mail.logout()
