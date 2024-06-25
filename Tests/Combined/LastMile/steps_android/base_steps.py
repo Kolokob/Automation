@@ -412,11 +412,9 @@ class BaseFixture:
                         msg = email.message_from_bytes(response_part[1])
                         msg_date = email.utils.parsedate_to_datetime(msg['Date'])
 
-                        # Преобразуем оба объекта datetime в наивные
                         msg_date_naive = msg_date.replace(tzinfo=None)
                         current_time_naive = datetime.now().replace(tzinfo=None)
 
-                        # Check if the email was received within the last 2 minutes
                         if current_time_naive - msg_date_naive <= timedelta(minutes=2):
                             subject, encoding = decode_header(msg["Subject"])[0]
                             if isinstance(subject, bytes):
