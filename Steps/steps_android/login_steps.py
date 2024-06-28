@@ -1,18 +1,19 @@
 import time
-from tenacity import retry, wait_fixed, stop_after_attempt, RetryError
 from behave import *
 from appium.webdriver.common.appiumby import AppiumBy
+from selenium.common import NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, StaleElementReferenceException, WebDriverException, NoSuchElementException, InvalidSessionIdException
-from Tests.Combined.LastMile.steps_android.base_steps import BaseFixture
-from Tests.Combined.LastMile.steps_android.order_steps import unique_number
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from Steps.steps_android.base_steps import BaseFixture
+from Steps.steps_android.order_steps import unique_number
 
 base_fixture_attr = BaseFixture()
 
 @given("I login as new user with new credentials that were got from the email")
 def perform_login_steps(context):
-    context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtLogin').click()
+    try:
+        context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtLogin').click()
+    except NoSuchElementException:
+        pass
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtEmail'))).send_keys(f'automation.senpex+{unique_number}@outlook.com')
     context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtPassword').send_keys(context.new_password)
     context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/btnSignIn').click()

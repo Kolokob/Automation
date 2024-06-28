@@ -68,7 +68,7 @@ class BaseFixture:
             context.driver.quit()
 
     def extract_data_to_json_file(self, *args):
-        filename = '/Users/kolokob/PycharmProjects/Automation/Tests/Combined/LastMile/OUTPUTS/outputs_ios.json'
+        filename = '/Tests/Combined/LastMile/OUTPUTS/outputs_ios.json'
         variable_names = [
             "order_id", "order_name", "driver_salary", "when", "vehicle", "size", "distance", "order_type",
             "routes_amount", "time_and_miles", "apt_pick_up", "pick_up_address", "apt_drop_off", "drop_off_address"
