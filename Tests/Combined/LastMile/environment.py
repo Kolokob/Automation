@@ -1,5 +1,5 @@
-from Tests.Combined.LastMile.steps_android import base_steps as android_base
-from Tests.Combined.LastMile.steps_ios import base_steps as ios_base
+from Steps.steps_android import base_steps as android_base
+from Steps.steps_ios import base_steps as ios_base
 
 
 def before_all(context):
