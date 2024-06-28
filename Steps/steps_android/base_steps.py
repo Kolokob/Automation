@@ -10,7 +10,6 @@ from appium import webdriver
 from appium.options.android import UiAutomator2Options
 from selenium.webdriver.support.wait import WebDriverWait
 import json
-
 from selenium.common import NoSuchElementException, ElementClickInterceptedException
 
 import unittest
