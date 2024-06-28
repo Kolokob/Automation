@@ -47,5 +47,4 @@ Feature: I go through test cases from https://docs.google.com/spreadsheets/d/1bG
 #    | 2              | 17ft Box Truck | Moving  | Sport Equipment              | Sports Equipment Transport                  |                                                 |                        |                        |                         |              |              |          |            |           |      |           |                     |          |     |  |
 #    | 3              | 9ft Cargo Van  | Moving  | Furniture                    | Furniture Rearrangement and Placement       |                                                 |                        |                        |                         |              |              |          |            |           |      |           |                     |          |     |  |
 #    | 1              | 10ft Box Truck | Moving  | Laboratory Equipment         | Laboratory Equipment Disposal and Recycling |                                                 |                        |                        |                         |              |              |          |            |           |      |           |                     |          |     |  |
-#
-#
+
