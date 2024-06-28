@@ -180,3 +180,5 @@ xattr==1.1.0
 yarl==1.9.4
 zope.event==5.0
 zope.interface==6.2
+Django==5.0.4
+aiohttp==3.9.5
