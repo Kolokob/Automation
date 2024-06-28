@@ -1,10 +1,6 @@
-import os
-import time
 from appium.webdriver.common.appiumby import AppiumBy
-from selenium.webdriver.support import expected_conditions as EC
-from datetime import datetime
 from behave import *
-from Tests.Combined.LastMile.steps_ios.base_steps import BaseFixture
+
 
 @given('I login as a driver with username "{username}" and password "{password}"')
 def login_as_mykyta(context, username, password):
