@@ -1,15 +1,10 @@
-import os
 import time
-import re
 from behave import *
-from appium.webdriver.common.appiumby import AppiumBy
-from selenium.webdriver.support import expected_conditions as EC
 from appium.webdriver.common.appiumby import AppiumBy
 from selenium.common import NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
-from selenium.webdriver.support.ui import WebDriverWait
-from Tests.Combined.LastMile.steps_ios.base_steps import Swiper, BaseFixture
+from Steps.steps_ios.base_steps import BaseFixture
 base_fixture_attr = BaseFixture()
 
 now = datetime.now().day

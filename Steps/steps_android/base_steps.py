@@ -51,7 +51,7 @@ class BaseFixture:
         context.driver = webdriver.Remote(appium_server_url, options=UiAutomator2Options().load_capabilities(capabilities))
         context.wait = WebDriverWait(context.driver, 10)
 
-        file_path = '/Users/kolokob/PycharmProjects/Automation/Tests/Combined/LastMile/steps_android/counter.txt'
+        file_path = '/Users/kolokob/PycharmProjects/Automation/Steps/steps_android/counter.txt'
         with open(file_path, 'r') as file:
             counter_value = int(file.read().strip())
 
@@ -85,42 +85,27 @@ class BaseFixture:
     def return_photos_attached(self):
         return self.photos_attached
 
-    def choose_vegicle_type(self, context, vegicle_type):
-        if list(vegicle_type.values())[0][4] != 'Car':
+    def choose_vehicle_type(self, context, vehicle_type:str):
+        if vehicle_type != 'Car':
             while True:
                 try:
-                    if context.driver.find_element(by=AppiumBy.XPATH, value='(//android.widget.TextView[@resource-id="com.snpx.customer:id/lblVehicleType"])[1]').text == \
-                            list(vegicle_type.values())[0][4]:
+                    if context.driver.find_element(by=AppiumBy.XPATH, value='(//android.widget.TextView[@resource-id="com.snpx.customer:id/lblVehicleType"])[1]').text == vehicle_type:
                         context.driver.find_element(by=AppiumBy.XPATH, value=f'(//android.widget.TextView[@resource-id="com.snpx.customer:id/lblVehicleType"])[1]').click()
                         break
-                    elif context.driver.find_element(by=AppiumBy.XPATH, value='(//android.widget.TextView[@resource-id="com.snpx.customer:id/lblVehicleType"])[2]').text == \
-                            list(vegicle_type.values())[0][4]:
+                    elif context.driver.find_element(by=AppiumBy.XPATH, value='(//android.widget.TextView[@resource-id="com.snpx.customer:id/lblVehicleType"])[2]').text == vehicle_type:
                         context.driver.find_element(by=AppiumBy.XPATH, value=f'(//android.widget.TextView[@resource-id="com.snpx.customer:id/lblVehicleType"])[2]').click()
                         break
                     context.driver.swipe(900, 1676, 560, 1676, 300)
                 except NoSuchElementException:
                     context.driver.swipe(900, 1676, 560, 1676, 300)
-        elif list(vegicle_type.values())[0][4] == 'Car':
+        elif vehicle_type == 'Car':
             context.driver.find_element(by=AppiumBy.XPATH, value=f'(//android.widget.TextView[@resource-id="com.snpx.customer:id/lblVehicleType"])[1]').click()
 
     def put_info_for_custom_size(self, context, parsel_size):
-        context.driver.find_element(by=AppiumBy.XPATH, value='//androidx.recyclerview.widget.RecyclerView[@resource-id="com.snpx.customer:id/recyclerViewSize"]/android.widget.RelativeLayout[5]').click()
-
-        if isinstance(parsel_size, dict):
-            context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtLength').send_keys(
-                list(parsel_size.values())[0][0])
-            context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtWidth').send_keys(
-                list(parsel_size.values())[0][1])
-            context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtHeight').send_keys(
-                list(parsel_size.values())[0][2])
-            context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtWeight').send_keys(
-                list(parsel_size.values())[0][3])
-
-        elif isinstance(parsel_size, str):
-            context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtLength').send_keys('12')
-            context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtWidth').send_keys('12')
-            context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtHeight').send_keys('12')
-            context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtWeight').send_keys('12')
+        context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtLength').send_keys(parsel_size[0])
+        context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtWidth').send_keys(parsel_size[1])
+        context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtHeight').send_keys(parsel_size[2])
+        context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtWeight').send_keys(parsel_size[3])
 
         context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/btnConfirm').click()
 
@@ -226,7 +211,7 @@ class BaseFixture:
             "unique_number": args[16]
         }
 
-        context.counter_file = '/Users/kolokob/PycharmProjects/Automation/Tests/Combined/LastMile/OUTPUTS/counter.txt'
+        context.counter_file = '/Tests/Combined/LastMile/OUTPUTS/counter.txt'
 
         if not os.path.exists(context.counter_file):
             with open(context.counter_file, 'w') as file:
@@ -242,7 +227,7 @@ class BaseFixture:
         with open(context.counter_file, 'w') as file:
             file.write(str(unique_number))
 
-        file_path = '/Users/kolokob/PycharmProjects/Automation/Tests/Combined/LastMile/OUTPUTS/outputs_android.json'
+        file_path = '/Tests/Combined/LastMile/OUTPUTS/outputs_android.json'
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
         if os.path.exists(file_path):
@@ -336,8 +321,8 @@ class BaseFixture:
 
     def compare_files(self):
         differences = []
-        file1_path = '/Users/kolokob/PycharmProjects/Automation/Tests/Combined/LastMile/OUTPUTS/outputs_android.json'
-        file2_path = '/Users/kolokob/PycharmProjects/Automation/Tests/Combined/LastMile/OUTPUTS/outputs_ios.json'
+        file1_path = '/Tests/Combined/LastMile/OUTPUTS/outputs_android.json'
+        file2_path = '/Tests/Combined/LastMile/OUTPUTS/outputs_ios.json'
 
         with open(file1_path, 'r') as f1, open(file2_path, 'r') as f2:
             file1_list = json.load(f1)
