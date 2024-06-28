@@ -5,7 +5,7 @@ Feature: I go through test cases from https://docs.google.com/spreadsheets/d/1bG
   Scenario Outline: Order creation and completion as instant order
     Given I click on "Get a Quote"
     Then I select "Last-mile delivery" service
-    Then I add "<pick_up_address_amount>" pick-up's addresses and "<pick_up_address_amount>" drop-off addresses
+    Then I add "<pick_up_address_amount>" pick-up's addresses and "<drop_off_address_amount>" drop-off addresses
     Then I click Continue
     Then I add parcel size as "<parcel_size>" and "<vehicle_type>"
     Then I make a "medium" "down" swipe
@@ -33,9 +33,9 @@ Feature: I go through test cases from https://docs.google.com/spreadsheets/d/1bG
     Then I navigate the latest order
 #    Then I extract data to json file
     Examples:
-      | pick_up_address_amount |  | pick_up_address_amount | parcel_size | vehicle_type   | pick_up_time | days_or_date               | time                         | start_date | tips | signature |  |
-      | 3                      |  | 3                      | small       | None           | urgent       | None                       | None                         | None       | 20   | True      |  |
-      | 2                      |  | 2                      | medium      | None           | urgent       | None                       | None                         | None       | None | False     |  |
-      | 1                      |  | 4                      | large       | SUV            | scheduled    | 29/06/2024                 | 04:23 PM                     | None       | 10   | False     |  |
-      | 1                      |  | 5                      | heavy_load  | 9ft Cargo Van  | scheduled    | 30/06/2024                 | 09:10 PM                     | None       | 100  | True      |  |
-      | 10                     |  | 10                     | custom size | 17ft Box Truck | repeated     | Thursday, Saturday, Sunday | 10:32 PM, 06:18 PM, 11:08 AM | 15/07/2024 | 1    | False     |  |
+      | pick_up_address_amount |  | drop_off_address_amount | parcel_size | vehicle_type   | pick_up_time | days_or_date               | time                         | start_date | tips | signature |  |
+      | 3                      |  | 3                       | small       | None           | urgent       | None                       | None                         | None       | 20   | True      |  |
+      | 2                      |  | 2                       | medium      | None           | urgent       | None                       | None                         | None       | None | False     |  |
+      | 1                      |  | 4                       | large       | SUV            | scheduled    | 29/06/2024                 | 04:23 PM                     | None       | 10   | False     |  |
+      | 1                      |  | 5                       | heavy_load  | 9ft Cargo Van  | scheduled    | 30/06/2024                 | 09:10 PM                     | None       | 100  | True      |  |
+      | 10                     |  | 10                      | custom size | 17ft Box Truck | repeated     | Thursday, Saturday, Sunday | 10:32 PM, 06:18 PM, 11:08 AM | 15/07/2024 | 1    | False     |  |

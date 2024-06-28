@@ -1,3 +1,4 @@
-a = 'Thu, Jun 27'
-b = '2024'
-print(b + " " +  a.split(', ')[1])
+a = 'Electronics'
+b = 'Electronics'
+print(a, b)
+

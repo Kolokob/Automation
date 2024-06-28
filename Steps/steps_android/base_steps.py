@@ -28,7 +28,8 @@ capabilities = dict(
     appPackage='com.snpx.customer',
     appActivity='com.snpx.customer.ui.SplashActivity',
     language='en',
-    locale='US'
+    locale='US',
+    newCommandTimeout='300'
 )
 
 appium_server_url = "http://localhost:4723"
@@ -41,7 +42,7 @@ class BaseFixture:
 
     def setUp(self, context):
         context.driver = webdriver.Remote(appium_server_url, options=UiAutomator2Options().load_capabilities(capabilities))
-        context.wait = WebDriverWait(context.driver, 15)
+        context.wait = WebDriverWait(context.driver, 5)
 
         file_path = '/Users/kolokob/PycharmProjects/Automation/Steps/steps_android/counter.txt'
         with open(file_path, 'r') as file:
@@ -77,7 +78,7 @@ class BaseFixture:
     def return_photos_attached(self):
         return self.photos_attached
 
-    def choose_vehicle_type(self, context, vehicle_type:str):
+    def choose_vehicle_type(self, context, vehicle_type:str, service):
         if vehicle_type != 'Car':
             while True:
                 try:
@@ -87,9 +88,15 @@ class BaseFixture:
                     elif context.driver.find_element(by=AppiumBy.XPATH, value='(//android.widget.TextView[@resource-id="com.snpx.customer:id/lblVehicleType"])[2]').text == vehicle_type:
                         context.driver.find_element(by=AppiumBy.XPATH, value=f'(//android.widget.TextView[@resource-id="com.snpx.customer:id/lblVehicleType"])[2]').click()
                         break
-                    context.driver.swipe(900, 1676, 560, 1676, 300)
+                    if service == 'Last-Mile delivery':
+                        context.driver.swipe(900, 1676, 560, 1676, 300)
+                    elif service == 'Moving':
+                        context.driver.swipe(900, 934, 575, 934, 300)
                 except NoSuchElementException:
-                    context.driver.swipe(900, 1676, 560, 1676, 300)
+                    if service == 'Last-Mile delivery':
+                        context.driver.swipe(900, 1676, 560, 1676, 300)
+                    elif service == 'Moving':
+                        context.driver.swipe(900, 934, 575, 934, 300)
         elif vehicle_type == 'Car':
             context.driver.find_element(by=AppiumBy.XPATH, value=f'(//android.widget.TextView[@resource-id="com.snpx.customer:id/lblVehicleType"])[1]').click()
 

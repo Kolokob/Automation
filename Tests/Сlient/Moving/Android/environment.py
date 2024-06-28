@@ -1,7 +1,10 @@
 from Steps.steps_android import base_steps as android_base
 from Steps.steps_ios import base_steps as ios_base
 from Steps.steps_android.base_steps import BaseFixture
-
+from Steps.steps_android import *
+from Steps.steps_ios import *
+from Steps.steps.ios_steps import *
+from Steps.steps.android_steps import *
 base = BaseFixture()
 
 def before_all(context):
