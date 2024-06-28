@@ -62,7 +62,14 @@ def execute_scenario(context):
 
 @given('I click on "Get a Quote"')
 def step_login(context):
-    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnInstantOrder'))).click()
+    counter = 0
+    while counter < 5:
+        try:
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnInstantOrder'))).click()
+            break
+        except:
+            time.sleep(1)
+            counter += 1
 
 @then('I add pick-up address as "{address}"')
 def step_login(context, address):
@@ -167,11 +174,10 @@ def step_login(context, service):
     while counter < 5:
         try:
             if service != 'Last-mile delivery':
-                context.driver.find_element(by=AppiumBy.XPATH, value=f'//android.widget.TextView[@resource-id="com.snpx.customer:id/txtName" and @text="{service}"]').click()
-                break
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//android.widget.TextView[@resource-id="com.snpx.customer:id/txtName" and @text="{service}"]'))).click()
             context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.TextView[@text="Place order"]'))).click()
             break
-        except TimeoutException:
+        except:
             counter += 1
             context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/imgClose'))).click()
             context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnInstantOrder'))).click()
@@ -331,8 +337,13 @@ def step_login(context, pick_up_time, days_or_date, time, start_date):
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'android:id/button1'))).click()
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnConfirm'))).click()
 
-@then('I add extra services: "{extra_services}"')
-def step_login(context, extra_services):
+@then('I add extra services "{extra_service}" and service "{service}"')
+def step_login(context, extra_service, service):
+    extra_service = extra_service.split(', ')
+    service = service.split(', ')
+    min_length = min(len(extra_service), len(service))
+    extra_services = {extra_service[i]: ['Be careful', service[i]] for i in range(min_length)}
+
     context.extra_services = extra_services
     if type(extra_services) == dict:
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtNeedExtraServices'))).click()
@@ -345,13 +356,14 @@ def step_login(context, extra_services):
                         context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'(//android.widget.ImageView[@resource-id="com.snpx.customer:id/checkbox"])[{counter}]'))).click()
                         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, f'com.snpx.customer:id/txtNote'))).send_keys(list(extra_services.values())[0][0])
                         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, f'com.snpx.customer:id/txtDropDown'))).click()
-                        context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//android.widget.TextView[@resource-id="android:id/text1" and @text="{list(extra_services.values())[counter_for_services][1]}"]'))).click()
+                        context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//android.widget.TextView[@resource-id="android:id/text1" and @text="{extra_services[i][1]}"]'))).click()
                         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnSave'))).click()
                         counter_for_services += 1
                         break
                 counter += 1
             except NoSuchElementException:
                 context.driver.swipe(551, 1507, 551, 189)
+                counter = 1
 
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnConfirm'))).click()
 
@@ -401,10 +413,10 @@ def step_login(context, amount):
 
 @then('I add signature "{decision}"')
 def step_login(context, decision):
-    if decision:
+    if decision == "Yes":
         context.signature = True
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/chkSignature'))).click()
-    else:
+    elif decision == "No":
         context.signature = False
 
 @then('I add sender full name as "{sender_full_name}"')
@@ -669,3 +681,97 @@ def step_login(context, credit_card_number, expiration_date, cvv):
             counter += 1
             context.swipe_attr.scroll_down('long')
 
+
+@then('I select categories "{category}" with "{add_info}"')
+def step_impl(context, category: str, add_info: str):
+    i = 1
+    while True:
+        try:
+            element = context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'(//android.widget.TextView[@resource-id="com.snpx.customer:id/txtName"])[{i}]')))
+            a = element.text
+            if element.text == category:
+                element.click()
+                break
+            else:
+                i += 1
+        except:
+            context.driver.swipe(551, 1507, 551, 1000)
+            i = 1
+
+    k = 1
+    while True:
+        try:
+            element = context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'(//android.widget.TextView[@resource-id="com.snpx.customer:id/txtName"])[{k}]')))
+            if element.text == add_info:
+                element.click()
+                break
+            else:
+                k += 1
+        except:
+            context.driver.swipe(551, 1507, 551, 1000)
+            k = 1
+
+# @then('I select categories "{category}" with "{add_info}"')
+# def step_impl(context, category: str, add_info: str):
+#     i = 1
+#     k = 1
+#     while i <= 11:
+#         try:
+#             element = context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'(//android.widget.TextView[@resource-id="com.snpx.customer:id/txtName"])[{i}]')))
+#             t = element.text
+#             if element.text == category:
+#                 element.click()
+#                 break
+#             i += 1
+#         except:
+#             context.driver.swipe(551, 1507, 551, 189)
+#
+#     while True:
+#         try:
+#             element2 = context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'(//android.widget.TextView[@resource-id="com.snpx.customer:id/txtName"])[{k}]')))
+#             if element2.text == add_info:
+#                 element2.click()
+#                 break
+#             k += 1
+#         except (IndexError, NoSuchElementException, StaleElementReferenceException):
+#             context.driver.swipe(551, 1507, 551, 189)
+#             k -= 1
+
+
+#     context.extra_services = extra_services
+#     if type(extra_services) == dict:
+#         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtNeedExtraServices'))).click()
+#         counter = 1
+#         counter_for_services = 0
+#         while counter_for_services < len(extra_services):
+#             try:
+#                 for i in extra_services.keys():
+#                     if context.driver.find_element(by=AppiumBy.XPATH, value=f'(//android.widget.TextView[@resource-id="com.snpx.customer:id/txtName"])[{counter}]').text == i:
+#                         context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'(//android.widget.ImageView[@resource-id="com.snpx.customer:id/checkbox"])[{counter}]'))).click()
+#                         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, f'com.snpx.customer:id/txtNote'))).send_keys(list(extra_services.values())[0][0])
+#                         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, f'com.snpx.customer:id/txtDropDown'))).click()
+#                         context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//android.widget.TextView[@resource-id="android:id/text1" and @text="{list(extra_services.values())[counter_for_services][1]}"]'))).click()
+#                         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnSave'))).click()
+#                         counter_for_services += 1
+#                         break
+#                 counter += 1
+#             except NoSuchElementException:
+#                 context.driver.swipe(551, 1507, 551, 189)
+#
+#         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnConfirm'))).click()
+
+@then('I choose vehicle type as "{vehicle_type}" in "{service}"')
+def step_impl(context, vehicle_type: str, service: str):
+    base_fixture_attr.choose_vehicle_type(context, vehicle_type, service)
+
+
+@then('I select "{helpers_amount}" helpers')
+def step_impl(context, helpers_amount:str):
+    if helpers_amount == 'only driver':
+        pass
+    elif helpers_amount == '1':
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.RadioButton[@resource-id="com.snpx.customer:id/rbVehicleType" and @text="1"]'))).click()
+    elif helpers_amount == '2':
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.RadioButton[@resource-id="com.snpx.customer:id/rbVehicleType" and @text="2"]'))).click()
+    elif helpers_amount == '3':
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.RadioButton[@resource-id="com.snpx.customer:id/rbVehicleType" and @text="3"]'))).click()

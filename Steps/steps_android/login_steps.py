@@ -20,7 +20,7 @@ def perform_login_steps(context):
 
 @then('I retrieve the login password')
 def step_impl(context):
-    time.sleep(5)
+    time.sleep(2)
     context.new_password = base_fixture_attr.get_password_from_email()
     context.new_password = base_fixture_attr.get_password_from_email()
     context.new_password = base_fixture_attr.get_password_from_email()
