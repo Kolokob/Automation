@@ -682,6 +682,33 @@ def step_impl(context, card_number, date, cvv):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.webkit.WebView[@text="Payment request"]/android.view.View[1]/android.view.View/android.view.View/android.view.View/android.view.View[2]/android.view.View[6]/android.view.View/android.view.View/android.view.View'))).send_keys(cvv)
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.Button[@text="Pay"]'))).click()
 
+@then('I select payment type as "{payment_type}"')
+def step_impl(context, payment_type):
+    if payment_type == 'saved card':
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.widget.TextView[@resource-id="com.snpx.customer:id/txtText"])[1]'))).click()
+    elif payment_type == 'payment link':
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.RelativeLayout[@resource-id="com.snpx.customer:id/rltPaymentMethod"]/android.widget.ImageView[2]'))).click()
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/rdbCreatePaymentLink'))).click()
+    elif payment_type == 'new credit card':
+        counter = 0
+        while counter < 3:
+            try:
+                context.credit_card_info = ['4242 4242 4242 4242', '0429', '123']
+
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/imgCreditPlus'))).click()
+
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_card_number'))).send_keys('4242 4242 4242 4242')
+
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_expiry'))).send_keys('0429')
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_cvc'))).send_keys('123')
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnAddNewCard'))).click()
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'android:id/button1'))).click()
+                break
+            except (TimeoutException, NoSuchElementException, StaleElementReferenceException,):
+                if counter == 2:
+                    raise Exception('Something went wrong with the list of cards')
+                counter += 1
+                context.swipe_attr.scroll_down('long')
 
 @then('I select saved credit card')
 def step_impl(context):

@@ -66,7 +66,6 @@ Feature: I go through test cases from https://docs.google.com/spreadsheets/d/1bG
     Then I make a "long" "down" swipe
     Then I click Continue
     Then I click on "Track Order"
-
     Examples:
       | pick_up_address_amount | drop_off_address_amount | parcel_size | vehicle_type   | declared_value | pick_up_time | days_or_date               | time                         | start_date | tips | signature | extra_service | extra_service_details |
       | 1                      | 1                       | small       | None           | 1000           | urgent       | None                       | None                         | None       | 20   | True      | Ladder        | 5                     |
