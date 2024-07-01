@@ -291,8 +291,11 @@ def step_login(context, length, direction):
 
 @then('I add declared value "{value}"')
 def step_login(context, value):
-    context.declared_value = value
-    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtItemValue'))).send_keys(value)
+    if int(value) > 0:
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtItemValue'))).send_keys(value)
+        context.declared_value = value
+    else:
+        context.declared_value = 0
 
 @then('I add pick-up time as "{pick_up_time}" with days "{days_or_date}" and time "{time}" for each and start date as "{start_date}"')
 def step_login(context, pick_up_time, days_or_date, time, start_date):
@@ -474,6 +477,35 @@ def step_login(context, credit_card_number, expiration_date, cvv):
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_card_number'))).send_keys(credit_card_number)
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_expiry'))).send_keys(expiration_date)
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_cvc'))).send_keys(cvv)
+
+@then('I pay with correct credit card')
+def step_payment(context):
+    context.credit_card_info = ['4242 4242 4242 4242', '0430', '123']
+    try:
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_card_number'))).send_keys('4242 4242 4242 4242')
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_expiry'))).send_keys('0430')
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_cvc'))).send_keys('123')
+    except StaleElementReferenceException:
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_card_number'))).send_keys('4242 4242 4242 4242')
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_expiry'))).send_keys('0430')
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_cvc'))).send_keys('123')
+
+@then('I pay with wrong credit card')
+def step_payment(context):
+    context.credit_card_info = ['1234 1234 1234 1234', '0430', '123']
+    try:
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_card_number'))).send_keys('1234 1234 1234 1234')
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_expiry'))).send_keys('0430')
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_cvc'))).send_keys('123')
+    except StaleElementReferenceException:
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_card_number'))).send_keys('1234 1234 1234 1234')
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_expiry'))).send_keys('0430')
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_cvc'))).send_keys('123')
+
+@then('I pay with payment link')
+def step_payment(context):
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.RelativeLayout[@resource-id="com.snpx.customer:id/rltPaymentMethod"]/android.widget.ImageView[2]'))).click()
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/rdbCreatePaymentLink'))).click()
 
 
 # @then('I should see an error message')
@@ -775,3 +807,21 @@ def step_impl(context, helpers_amount:str):
         context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.RadioButton[@resource-id="com.snpx.customer:id/rbVehicleType" and @text="2"]'))).click()
     elif helpers_amount == '3':
         context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.RadioButton[@resource-id="com.snpx.customer:id/rbVehicleType" and @text="3"]'))).click()
+
+
+@then('I add pick-up address and drop-off address as "{pick_up_address}", "{drop_off_address}" for Nationwide')
+def step_impl(context, pick_up_address, drop_off_address):
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, 'com.snpx.customer:id/txtPickupAddress'))).click()
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, 'com.snpx.customer:id/txtLocation'))).send_keys(pick_up_address)
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, 'com.snpx.customer:id/txtLocationDetails'))).send_keys('apt 1')
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, 'com.snpx.customer:id/btnContinue'))).click()
+
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, 'com.snpx.customer:id/txtDropOffAddress'))).click()
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, 'com.snpx.customer:id/txtLocation'))).send_keys(drop_off_address)
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, 'com.snpx.customer:id/txtLocationDetails'))).send_keys('apt 2')
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, 'com.snpx.customer:id/btnContinue'))).click()
+
+
+@then('I add pick-up full name as "{full_name}" for Nationwide')
+def step_impl(context, full_name):
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, 'com.snpx.customer:id/txtPickupFullName'))).send_keys(full_name)
