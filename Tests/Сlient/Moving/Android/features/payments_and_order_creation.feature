@@ -234,12 +234,7 @@ Feature: Create an order and check all payment methods
   Scenario: I create an order as a user with account and pay by payment link
     Given I login as client with username "gihala5645@picdv.com" and password "123456"
     Then I select "Last-mile delivery" service
-    Then I add pick-up address as "S"
-    Then I add location details as "Crater"
-    Then I click Continue
-    Then I add drop-off address as "Q"
-    Then I add location details as "Sun"
-    Then I click Continue
+    Then I add "1" pick-up's addresses and "1" drop-off addresses
     Then I click Continue
     Then I add parcel size as "small" and "None"
     Then I make a "medium" "down" swipe
@@ -253,12 +248,7 @@ Feature: Create an order and check all payment methods
     Then I click Continue
     Then I add name of the order as "Cockroaches"
     Then I add description to the order as "Describe your shipment"
-    Then I make a "medium" "down" swipe
-    Then I make a "long" "down" swipe
-    Then I make a "short" "down" swipe
-    Then I make a "short" "down" swipe
-    Then I add receiver full name as "John Marston"
-    Then I add receiver phone number as "5104029083"
+    Then I add receiver's and sender's all info in all required fields
     Then I click Continue
     Then I click Continue
     Then I select payment type as payment link
@@ -266,6 +256,8 @@ Feature: Create an order and check all payment methods
     Then I click Continue
     Then I open retrieved payment link and pay for it "4242424242424242", "0429", "123"
     Then I open "customer" app
-    Given I login as client with username "gihala5645@picdv.com" and password "123456"
+    Then I retrieve the login password
+    Given I login as new user with new credentials that were got from the email
     Then I navigate the latest order
+    Then I should see order status as "Paid order"
 
