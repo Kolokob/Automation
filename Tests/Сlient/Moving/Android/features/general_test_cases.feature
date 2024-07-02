@@ -48,7 +48,7 @@ Feature: I go through test cases from https://docs.google.com/spreadsheets/d/1bG
 #    | 3              | 9ft Cargo Van  | Moving  | Furniture                    | Furniture Rearrangement and Placement       |                                                 |                        |                        |                         |              |              |          |            |           |      |           |                     |          |     |  |
 #    | 1              | 10ft Box Truck | Moving  | Laboratory Equipment         | Laboratory Equipment Disposal and Recycling |                                                 |                        |                        |                         |              |              |          |            |           |      |           |                     |          |     |  |
 
-    @android
+  @android
   Scenario Outline: Order creation and completion as existing user
     Given I login as client with username "gihala5645@picdv.com" and password "123456"
     Then I select "Moving" service

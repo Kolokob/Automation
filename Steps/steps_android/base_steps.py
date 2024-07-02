@@ -1,22 +1,17 @@
 # file: Tests/Client/LastMile/Android/steps_android/base_steps.py
-import ast
-import email
-import imaplib
 import inspect
-import re
-from email.header import decode_header
-
-from appium import webdriver
-from appium.options.android import UiAutomator2Options
-from selenium.webdriver.support.wait import WebDriverWait
+import email.utils
 import json
 from selenium.common import NoSuchElementException, ElementClickInterceptedException
-
-import unittest
+from selenium.webdriver.support import expected_conditions as EC
+import imaplib
+import email
+import re
+from email.header import decode_header
+from email.utils import parsedate_to_datetime
+import time
 from appium import webdriver
 from appium.webdriver.common.appiumby import AppiumBy
-import subprocess
-import datetime
 import os
 from appium.options.android import UiAutomator2Options
 from selenium.webdriver.support.wait import WebDriverWait
@@ -244,6 +239,138 @@ class BaseFixture:
 
         with open(file_path, 'w') as json_file:
             json.dump(existing_data, json_file, indent=4)
+
+    def open_link_in_browser(self, link, card_number, date, cvv):
+        desired_capabilities = {
+            'platformName': 'Android',
+            'automationName': 'uiautomator2',
+            'deviceName': 'Android',
+            'browserName': 'Chrome',
+            'language': 'en',
+            'locale': 'US',
+            'chromedriver_autodownload': True
+        }
+
+        appium_server_url = "http://localhost:4723"
+
+        driver = webdriver.Remote(appium_server_url, options=UiAutomator2Options().load_capabilities(desired_capabilities))
+
+        try:
+            driver.get(link)
+            WebDriverWait(driver, 10).until(EC.presence_of_element_located((AppiumBy.TAG_NAME, 'body')))
+            print("Page loaded successfully")
+            driver.wait = WebDriverWait(driver, 15)
+            self.swipe_attr = Swiper(driver)
+            for i in range(4):
+                self.swipe_attr.scroll_down('long')
+            driver.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "(//iframe[starts-with(@name, '__privateStripeFrame') and string-length(@name)=string-length('__privateStripeFrame')+4])[1]"))).send_keys(card_number)
+            driver.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "(//iframe[starts-with(@name, '__privateStripeFrame') and string-length(@name)=string-length('__privateStripeFrame')+4])[2]"))).send_keys(date)
+            driver.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "(//iframe[starts-with(@name, '__privateStripeFrame') and string-length(@name)=string-length('__privateStripeFrame')+4])[3]"))).send_keys(cvv)
+            try:
+                driver.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//section/div[1]/div/div[4]/button'))).click()
+                time.sleep(1)
+                driver.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//section/div[1]/div/div[4]/button/span'))).click()
+            except:
+                pass
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+        finally:
+            driver.quit()
+
+    def open_app(self, context, app_package, app_activity):
+        desired_capabilities = dict(
+            platformName='Android',
+            automationName='uiautomator2',
+            deviceName='Android',
+            appPackage=app_package,
+            appActivity=app_activity,
+            language='en',
+            locale='US'
+        )
+
+        context.driver = webdriver.Remote(appium_server_url, options=UiAutomator2Options().load_capabilities(desired_capabilities))
+        context.wait = WebDriverWait(context.driver, 15)
+
+    def get_link_from_email(self):
+        time.sleep(10)
+        username = "automation.senpex@outlook.com"
+        password_for_email = "A27011975a"
+        link = None
+
+        start_time = time.time()
+
+        mail = imaplib.IMAP4_SSL("outlook.office365.com", 993)
+        try:
+            mail.login(username, password_for_email)
+            print("Login successful!")
+        except imaplib.IMAP4.error as e:
+            print(f"Failed to login: {e}")
+            return None
+
+        mail.select("inbox")
+
+        status, messages = mail.search(None, '(FROM "noreply@senpex.com")')
+        email_ids = messages[0].split()
+        email_ids = [eid.decode() for eid in email_ids]  # декодируем идентификаторы
+
+        if email_ids:
+            # Получаем заголовки всех сообщений
+            result, headers = mail.fetch(','.join(email_ids), '(BODY[HEADER.FIELDS (DATE SUBJECT FROM)])')
+            email_date_pairs = []
+
+            for msg_part in headers:
+                if isinstance(msg_part, tuple):
+                    msg = email.message_from_bytes(msg_part[1])
+                    msg_date = msg["Date"]
+                    email_id = msg_part[0].decode().split()[0]
+                    email_date_pairs.append((email_id, msg_date))
+
+            email_date_pairs.sort(key=lambda x: parsedate_to_datetime(x[1]), reverse=True)
+
+            for email_id, _ in email_date_pairs:
+                result, msg_data = mail.fetch(email_id, "(RFC822)")
+                for msg_part in msg_data:
+                    if isinstance(msg_part, tuple):
+                        msg = email.message_from_bytes(msg_part[1])
+                        subject, encoding = decode_header(msg["Subject"])[0]
+                        if isinstance(subject, bytes):
+                            subject = subject.decode(encoding if encoding else "utf-8")
+                        from_ = msg.get("From")
+
+                        if msg.is_multipart():
+                            for part in msg.walk():
+                                content_type = part.get_content_type()
+                                content_disposition = str(part.get("Content-Disposition"))
+
+                                try:
+                                    body = part.get_payload(decode=True).decode()
+                                except:
+                                    continue
+
+                                if content_type == "text/plain" and "attachment" not in content_disposition:
+                                    match = re.search(r'Please use the link below to process payment\s*(https?://\S+)', body)
+                                    if match:
+                                        link = match.group(1)
+                                        break
+                        else:
+                            body = msg.get_payload(decode=True).decode()
+                            match = re.search(r'Please use the link below to process payment\s*(https?://\S+)', body)
+                            if match:
+                                link = match.group(1)
+                                break
+                if link:
+                    break
+        else:
+            print("No emails found from noreply@senpex.com")
+
+        mail.close()
+        mail.logout()
+
+        end_time = time.time()
+        print(f"Time taken: {end_time - start_time:.2f} seconds")
+        return link
+
     def get_password_from_email(self):
         username = "automation.senpex@outlook.com"
         password_for_email = "A27011975a"
@@ -259,61 +386,47 @@ class BaseFixture:
 
         mail.select("inbox")
 
+        # Получить только последние 5 писем
         status, messages = mail.search(None, '(FROM "noreply@senpex.com")')
-        email_ids = messages[0].split()
+        email_ids = messages[0].split()[-5:]  # Получаем последние 5 писем
 
-        if email_ids:
-            email_date_pairs = []
-            for email_id in email_ids:
-                res, msg = mail.fetch(email_id, "(BODY[HEADER.FIELDS (DATE)])")
-                for response_part in msg:
-                    if isinstance(response_part, tuple):
-                        msg_date = email.message_from_bytes(response_part[1])["Date"]
-                        email_date_pairs.append((email_id, msg_date))
+        for email_id in reversed(email_ids):  # Проверяем последние письма сначала
+            res, msg = mail.fetch(email_id, "(RFC822)")
+            for response_part in msg:
+                if isinstance(response_part, tuple):
+                    msg = email.message_from_bytes(response_part[1])
+                    subject, encoding = decode_header(msg["Subject"])[0]
+                    if isinstance(subject, bytes):
+                        subject = subject.decode(encoding if encoding else "utf-8")
+                    from_ = msg.get("From")
 
-            email_date_pairs.sort(key=lambda x: email.utils.parsedate_to_datetime(x[1]), reverse=True)
+                    print("Subject:", subject)
+                    print("From:", from_)
+                    print("=" * 100)
 
-            for email_id, _ in email_date_pairs:
-                res, msg = mail.fetch(email_id, "(RFC822)")
-                for response_part in msg:
-                    if isinstance(response_part, tuple):
-                        msg = email.message_from_bytes(response_part[1])
-                        subject, encoding = decode_header(msg["Subject"])[0]
-                        if isinstance(subject, bytes):
-                            subject = subject.decode(encoding if encoding else "utf-8")
-                        from_ = msg.get("From")
+                    if msg.is_multipart():
+                        for part in msg.walk():
+                            content_type = part.get_content_type()
+                            content_disposition = str(part.get("Content-Disposition"))
 
-                        print("Subject:", subject)
-                        print("From:", from_)
-                        print("=" * 100)
-
-                        if msg.is_multipart():
-                            for part in msg.walk():
-                                content_type = part.get_content_type()
-                                content_disposition = str(part.get("Content-Disposition"))
-
-                                try:
-                                    body = part.get_payload(decode=True).decode()
-                                except:
-                                    pass
-
-                                if content_type == "text/plain" and "attachment" not in content_disposition:
-                                    print("Body:", body)
-                                    match = re.search(r'Your password is (\d+)', body)
-                                    if match:
-                                        password = match.group(1)
-                                        print(f"Extracted password: {password}")
-                                        break
-                        else:
-                            body = msg.get_payload(decode=True).decode()
-                            print("Body:", body)
-                            match = re.search(r'Your password is (\d+)', body)
-                            if match:
-                                password = match.group(1)
-                                print(f"Extracted password: {password}")
-                                break
-                if password:
-                    break
+                            if content_type == "text/plain" and "attachment" not in content_disposition:
+                                body = part.get_payload(decode=True).decode()
+                                print("Body:", body)
+                                match = re.search(r'Your password is (\d+)', body)
+                                if match:
+                                    password = match.group(1)
+                                    print(f"Extracted password: {password}")
+                                    break
+                    else:
+                        body = msg.get_payload(decode=True).decode()
+                        print("Body:", body)
+                        match = re.search(r'Your password is (\d+)', body)
+                        if match:
+                            password = match.group(1)
+                            print(f"Extracted password: {password}")
+                            break
+            if password:
+                break
         else:
             print("No emails found from noreply@senpex.com")
 

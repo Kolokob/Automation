@@ -177,7 +177,7 @@ def step_login(context, service):
                 context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//android.widget.TextView[@resource-id="com.snpx.customer:id/txtName" and @text="{service}"]'))).click()
             context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.TextView[@text="Place order"]'))).click()
             break
-        except:
+        except TimeoutException:
             counter += 1
             context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/imgClose'))).click()
             context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnInstantOrder'))).click()
@@ -469,14 +469,15 @@ def step_login(context, receiver_phone_number):
 @then('I add credit card info as "{credit_card_number}" for credit card number, "{expiration_date}" for expiration date and "{cvv}" for CVV')
 def step_login(context, credit_card_number, expiration_date, cvv):
     context.credit_card_info = [credit_card_number, expiration_date, cvv]
-    try:
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_card_number'))).send_keys(credit_card_number)
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_expiry'))).send_keys(expiration_date)
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_cvc'))).send_keys(cvv)
-    except StaleElementReferenceException:
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_card_number'))).send_keys(credit_card_number)
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_expiry'))).send_keys(expiration_date)
-        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_cvc'))).send_keys(cvv)
+    counter = 0
+    while counter < 10:
+        try:
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_card_number'))).send_keys(credit_card_number)
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_expiry'))).send_keys(expiration_date)
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_cvc'))).send_keys(cvv)
+        except:
+            counter += 1
+            context.driver.swipe(300, 1380, 300, 330, 1000)
 
 @then('I pay with correct credit card')
 def step_payment(context):
@@ -551,9 +552,7 @@ def step_payment(context):
 def step_login(context):
     time.sleep(2)
     specific_error_locator = (AppiumBy.ID, "com.snpx.customer:id/textinput_error")
-    generic_error_locators = [
-        (AppiumBy.ID, "android:id/message")
-    ]
+    generic_error_locators = [(AppiumBy.ID, "android:id/message")]
 
     error_message = None
 
@@ -703,12 +702,38 @@ def step_impl(context, payment_type):
                 context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_cvc'))).send_keys('123')
                 context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnAddNewCard'))).click()
                 context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'android:id/button1'))).click()
+                context.driver.swipe(300, 330, 300, 1380, 500)
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.widget.TextView[@resource-id="com.snpx.customer:id/txtText"])[1]'))).click()
                 break
             except (TimeoutException, NoSuchElementException, StaleElementReferenceException,):
                 if counter == 2:
                     raise Exception('Something went wrong with the list of cards')
                 counter += 1
-                context.swipe_attr.scroll_down('long')
+                context.driver.swipe(300, 1380, 300, 330, 1000)
+
+    elif payment_type.split()[0] == 'new credit card':
+        counter = 0
+        credit_card_number = payment_type.split()[0]
+        expiry = payment_type.split()[1]
+        cvv = payment_type.split()[2]
+        while counter < 3:
+            try:
+                context.credit_card_info = [credit_card_number, expiry, cvv]
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/imgCreditPlus'))).click()
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_card_number'))).send_keys(credit_card_number)
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_expiry'))).send_keys(expiry)
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_cvc'))).send_keys(cvv)
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnAddNewCard'))).click()
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'android:id/button1'))).click()
+                context.driver.swipe(300, 330, 300, 1380, 500)
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.widget.TextView[@resource-id="com.snpx.customer:id/txtText"])[1]'))).click()
+                break
+            except (TimeoutException, NoSuchElementException, StaleElementReferenceException,):
+                if counter == 2:
+                    raise Exception('Something went wrong with the list of cards')
+                counter += 1
+                context.driver.swipe(300, 330, 300, 1380, 1000)
+
 
 @then('I select saved credit card')
 def step_impl(context):
@@ -716,12 +741,14 @@ def step_impl(context):
 
 @then('I select recently created credit card')
 def step_impl(context):
+    context.driver.swipe(300, 330, 300, 1380, 100)
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.widget.TextView[@resource-id="com.snpx.customer:id/txtText"])[last()]'))).click()
+    context.driver.swipe(300, 1380, 300, 330, 100)
 
 @then('I add a new card as "{credit_card_number}" for credit card number, "{expiration_date}" for expiration date and "{cvv}" for CVV')
 def step_login(context, credit_card_number, expiration_date, cvv):
     counter = 0
-    while counter < 3:
+    while counter < 10:
         try:
             context.credit_card_info = [credit_card_number, expiration_date, cvv]
 
@@ -735,10 +762,10 @@ def step_login(context, credit_card_number, expiration_date, cvv):
             context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'android:id/button1'))).click()
             break
         except (TimeoutException, NoSuchElementException, StaleElementReferenceException,):
-            if counter == 2:
+            if counter == 10:
                 raise Exception('Something went wrong with the list of cards')
             counter += 1
-            context.swipe_attr.scroll_down('long')
+            context.driver.swipe(300, 330, 300, 1380, 100)
 
 
 @then('I select categories "{category}" with "{add_info}"')
@@ -852,3 +879,31 @@ def step_impl(context, pick_up_address, drop_off_address):
 @then('I add pick-up full name as "{full_name}" for Nationwide')
 def step_impl(context, full_name):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, 'com.snpx.customer:id/txtPickupFullName'))).send_keys(full_name)
+
+
+@then('I should see order status as "{status}"')
+def step_impl(context, status):
+    element = context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtOrderStatus')))
+    assert element.text == status
+
+
+@then('I add a new card as "{card_number}" expecting it to fail')
+def step_impl(context, card_number):
+    counter = 0
+    while counter < 10:
+        try:
+            context.credit_card_info = [card_number, '0429', '123']
+
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/imgCreditPlus'))).click()
+
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_card_number'))).send_keys(card_number)
+
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_expiry'))).send_keys('0429')
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_cvc'))).send_keys('123')
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnAddNewCard'))).click()
+            break
+        except (TimeoutException, NoSuchElementException, StaleElementReferenceException,):
+            if counter == 10:
+                raise Exception('Something went wrong with the list of cards')
+            counter += 1
+            context.driver.swipe(300, 330, 300, 1380, 100)
