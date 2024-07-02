@@ -907,3 +907,37 @@ def step_impl(context, card_number):
                 raise Exception('Something went wrong with the list of cards')
             counter += 1
             context.driver.swipe(300, 330, 300, 1380, 100)
+
+
+@then('I add all sender\'s info "{send_full_name}", "{send_phone_number}", "{send_email}"')
+def step_impl(context, send_full_name, send_phone_number, send_email):
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtPickupFullName'))).send_keys(send_full_name)
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtPickupPhone'))).send_keys(send_phone_number)
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtPickupEmail'))).send_keys(send_email)
+
+
+@then('I add all recipient\'s info "{rec_full_name}", "{rec_phone_number}"')
+def step_impl(context, rec_full_name, rec_phone_number):
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtDropOffFullName'))).send_keys(rec_full_name)
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtDropOffPhone'))).send_keys(rec_phone_number)
+
+
+@then('I add custom dimensions as "{length}", "{width}", "{height}", "{parcel_weight}", "{packing}"')
+def step_impl(context, length, width, height, parcel_weight, packing:str):
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLength'))).send_keys(length)
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtWidth'))).send_keys(width)
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtHeight'))).send_keys(height)
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtWeight'))).send_keys(parcel_weight)
+    if packing == "No":
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtPacking'))).click()
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, f'//android.widget.CheckedTextView[@resource-id="android:id/text1" and contains(@text, "{packing.capitalize()}")]'))).click()
+
+
+@then('I add additional indo as "{order_name}", "{declared_value}", "{special_notes}", "{schedule_time}"')
+def step_impl(context, order_name, declared_value, special_notes, schedule_time):
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtSendingName'))).send_keys(order_name)
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtDeclaredValue'))).send_keys(declared_value)
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtNote'))).send_keys(special_notes)
+    if schedule_time != 'Ready for pick-up':
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtScheduleTime'))).click()
+

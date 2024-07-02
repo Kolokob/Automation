@@ -6,7 +6,11 @@ Feature: I go through test cases from https://docs.google.com/spreadsheets/d/1bG
     Given I click on "Get a Quote"
     Then I select "Nationwide" service
     Then I add pick-up address and drop-off address as "<pick_up_address>", "<drop_off_address>" for Nationwide
-    Then I add all sender's info "<full_name>"
+    Then I add all sender's info "send_full_name", "send_phone_number", "send_email"
+    Then I add all recipient's info "rec_full_name", "rec_phone_number", "rec_email"
+    Then I add custom dimensions as "{length}", "{width}", "{height}", "{parcel_weight}", "{packing}"
+    Then I make a "long" "down" swipe
+    Then I add additional indo as "order_name", "declared_value", "special_notes", "schedule_time"
 
 #    Then I select categories "<category>" with "<add_info>"
 #    Then I choose vehicle type as "<vehicle_type>" in "<service>"
