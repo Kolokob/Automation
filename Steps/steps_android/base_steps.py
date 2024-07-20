@@ -37,7 +37,7 @@ class BaseFixture:
 
     def setUp(self, context):
         context.driver = webdriver.Remote(appium_server_url, options=UiAutomator2Options().load_capabilities(capabilities))
-        context.wait = WebDriverWait(context.driver, 5)
+        context.wait = WebDriverWait(context.driver, 3)
 
         file_path = '/Users/kolokob/PycharmProjects/Automation/Steps/steps_android/counter.txt'
         with open(file_path, 'r') as file:
@@ -47,6 +47,12 @@ class BaseFixture:
 
         with open(file_path, 'w') as file:
             file.write(str(counter_value))
+
+        with open(file_path, 'r') as file:
+            a = int(file.read())
+            context.test_id = a
+
+        context.swipe_attr = Swiper(context.driver)
 
         context.extra_services = {'Furniture Assembly and Disassembly': 1, 'Ladder': 2, 'Food Catering Setup': 3,
                                'Blankets': 4, 'White gloves service': 5, 'Waiting on the line': 6,
@@ -240,7 +246,7 @@ class BaseFixture:
         with open(file_path, 'w') as json_file:
             json.dump(existing_data, json_file, indent=4)
 
-    def open_link_in_browser(self, link, card_number, date, cvv):
+    def open_link_in_browser(self, context, link, card_number, date, cvv):
         desired_capabilities = {
             'platformName': 'Android',
             'automationName': 'uiautomator2',
@@ -260,9 +266,9 @@ class BaseFixture:
             WebDriverWait(driver, 10).until(EC.presence_of_element_located((AppiumBy.TAG_NAME, 'body')))
             print("Page loaded successfully")
             driver.wait = WebDriverWait(driver, 15)
-            self.swipe_attr = Swiper(driver)
+            context.swipe_attr = Swiper(driver)
             for i in range(4):
-                self.swipe_attr.scroll_down('long')
+                context.swipe_attr.scroll_down('long')
             driver.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "(//iframe[starts-with(@name, '__privateStripeFrame') and string-length(@name)=string-length('__privateStripeFrame')+4])[1]"))).send_keys(card_number)
             driver.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "(//iframe[starts-with(@name, '__privateStripeFrame') and string-length(@name)=string-length('__privateStripeFrame')+4])[2]"))).send_keys(date)
             driver.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, "(//iframe[starts-with(@name, '__privateStripeFrame') and string-length(@name)=string-length('__privateStripeFrame')+4])[3]"))).send_keys(cvv)

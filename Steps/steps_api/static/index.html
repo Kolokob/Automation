@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sender API Interface</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Sender API Interface</h1>
+
+        <section class="form-section">
+            <h2><i class="fas fa-user-plus"></i> Create Sender</h2>
+            <form id="create-sender-form">
+                <input type="email" id="create-email" placeholder="Email" required>
+                <input type="password" id="create-password" placeholder="Password" required>
+                <input type="text" id="create-country" placeholder="Country" required>
+                <button type="submit">Create Sender</button>
+            </form>
+            <div id="create-result" class="result"></div>
+        </section>
+
+        <section class="form-section">
+            <h2><i class="fas fa-sign-in-alt"></i> Login</h2>
+            <form id="login-form">
+                <input type="email" id="login-email" placeholder="Email" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <input type="text" id="login-country" placeholder="Country" required>
+                <button type="submit">Login</button>
+            </form>
+            <div id="login-result" class="result"></div>
+        </section>
+
+        <section class="form-section">
+            <h2><i class="fas fa-key"></i> Get Token</h2>
+            <form id="get-token-form">
+                <input type="email" id="token-email" placeholder="Email" required>
+                <input type="password" id="token-password" placeholder="Password" required>
+                <input type="text" id="token-country" placeholder="Country" required>
+                <input type="text" id="token-session" placeholder="Session Key" required>
+                <button type="submit">Get Token</button>
+            </form>
+            <div id="token-result" class="result"></div>
+        </section>
+
+        <section class="form-section">
+            <h2><i class="fas fa-sign-out-alt"></i> Logout</h2>
+            <form id="logout-form">
+                <input type="email" id="logout-email" placeholder="Email" required>
+                <input type="password" id="logout-password" placeholder="Password" required>
+                <input type="text" id="logout-country" placeholder="Country" required>
+                <input type="text" id="logout-session" placeholder="Session Key" required>
+                <button type="submit">Logout</button>
+            </form>
+            <div id="logout-result" class="result"></div>
+        </section>
+
+        <section class="form-section">
+            <h2><i class="fas fa-user-edit"></i> Update Profile</h2>
+            <form id="update-profile-form">
+                <input type="email" id="update-email" placeholder="Email" required>
+                <input type="password" id="update-password" placeholder="Password" required>
+                <input type="text" id="update-country" placeholder="Country" required>
+                <input type="text" id="update-session" placeholder="Session Key" required>
+                <input type="text" id="update-name" placeholder="Name">
+                <input type="text" id="update-surname" placeholder="Surname">
+                <input type="text" id="update-cell" placeholder="Cell">
+                <input type="text" id="update-address" placeholder="Address">
+                <button type="submit">Update Profile</button>
+            </form>
+            <div id="update-result" class="result"></div>
+        </section>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

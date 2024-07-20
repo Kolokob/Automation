@@ -16,8 +16,14 @@ now = datetime.now().day
 
 counter_file = '/Users/kolokob/PycharmProjects/Automation/Steps/steps_android/counter.txt'
 
+
 with open(counter_file, 'r') as file:
     unique_number = int(file.read())
+
+unique_number += 1
+
+with open(counter_file, 'w') as file:
+    file.write(str(unique_number))
 
 def restart_app(context):
     context.driver = base_fixture_attr.setUp(context)
@@ -60,6 +66,7 @@ def execute_scenario(context):
         restart_app(context)
         execute_scenario(context)
 
+
 @given('I click on "Get a Quote"')
 def step_login(context):
     counter = 0
@@ -70,6 +77,7 @@ def step_login(context):
         except:
             time.sleep(1)
             counter += 1
+
 
 @then('I add pick-up address as "{address}"')
 def step_login(context, address):

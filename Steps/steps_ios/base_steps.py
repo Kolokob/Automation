@@ -1,41 +1,39 @@
 # file: Tests/Client/LastMile/Android/steps_android/base_steps.py
 import email
 import imaplib
-import inspect
-import logging
 import re
+import sys
 from email.header import decode_header
-
-from appium import webdriver
-from appium.options.android import UiAutomator2Options
-from selenium.webdriver.support.wait import WebDriverWait
 import json
-
-from selenium.common import NoSuchElementException, ElementClickInterceptedException
-
 import unittest
 from appium import webdriver
 from appium.webdriver.common.appiumby import AppiumBy
 import subprocess
 import datetime
 import os
+import time
 from appium.options.android import UiAutomator2Options
+from selenium.common import TimeoutException
+from selenium.webdriver import ActionChains
+from selenium.webdriver.common.actions import interaction
+from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.support.wait import WebDriverWait
-
-capabilities = {
-  "platformName": "iOS",
-  "appium:automationName": "XCUITest",
-  "appium:deviceName": "iPhone",
-  "appium:platformVersion": "16.2",
-  "appium:bundleId": "com.senpex.customer",
-  "appium:language": "en",
-  "appium:locale": "US",
-  "appium:udid": "00008120-000849E214DB401E",
-  "appium:xcodeSigningId": "iPhone Developer",
-  "appium:updatedWDABundleId": "com.kolokob.WebDriverAgentRunner"
-}
+from selenium.webdriver.support import expected_conditions as EC
+from appium.webdriver.common.touch_action import TouchAction
 
 appium_server_url = "http://localhost:4723"
+
+capabilities = {
+    "platformName": "iOS",
+    "appium:automationName": "XCUITest",
+    "appium:deviceName": "iPhone",
+    "appium:platformVersion": "16.2",
+    "appium:language": "en",
+    "appium:locale": "US",
+    "appium:udid": "00008120-000849E214DB401E",
+    "appium:xcodeSigningId": "iPhone Developer",
+    "appium:updatedWDABundleId": "com.kolokob.WebDriverAgentRunner"
+}
 
 capabilities_options = UiAutomator2Options().load_capabilities(capabilities)
 
@@ -46,9 +44,12 @@ class BaseFixture:
         self.signature = None
         self.photos_attached = 0
 
-    def setUp(self, context):
-        context.driver = webdriver.Remote(appium_server_url, options=UiAutomator2Options().load_capabilities(capabilities))
-        context.wait = WebDriverWait(context.driver, 15)
+    def setUp(self, context, bundle_id):
+        capabilities["appium:bundleId"] = bundle_id
+        options = UiAutomator2Options().load_capabilities(capabilities)
+        context.driver = webdriver.Remote(appium_server_url, options=options)
+        # context.driver = webdriver.Remote(appium_server_url, options=UiAutomator2Options().load_capabilities(capabilities))
+        context.wait = WebDriverWait(context.driver, 5)
 
         context.extra_services = {'Furniture Assembly and Disassembly': 1, 'Ladder': 2, 'Food Catering Setup': 3,
                                'Blankets': 4, 'White gloves service': 5, 'Waiting on the line': 6,
@@ -170,69 +171,92 @@ class BaseFixture:
 
         return password
 
+    def choose_vehicle_type(self, context, vehicle_type: str):
+        context.swipe_attr = Swiper(context.driver)
+        success = False
+        if vehicle_type != 'Car':
+            while not success:
+                try:
+                    element = context.wait.until(EC.element_to_be_clickable((AppiumBy.IOS_CLASS_CHAIN, f'**/XCUIElementTypeButton[`name == "{vehicle_type}"`]')))
+                    element.click()
+                    if not context.driver.find_element(by=AppiumBy.IOS_CLASS_CHAIN, value=f'**/XCUIElementTypeButton[`name == "{vehicle_type}"`]'):
+                        success = True
+                    else:
+                        context.driver.swipe(224, 560, 1, 560, 1000)
+                except TimeoutException:
+                    context.driver.swipe(224, 560, 1, 560, 1000)
+                except Exception as e:
+                    print(f"Error: {e}")
+                    context.driver.swipe(224, 560, 1, 560, 1000)
+
+        elif vehicle_type == 'Car':
+            context.driver.find_element(by=AppiumBy.XPATH, value=f'(//android.widget.TextView[@resource-id="com.snpx.customer:id/lblVehicleType"])[1]').click()
+            success = True
+        return success
 
 
 
 
-# class Swiper:
-#
-#     def __init__(self, context):
-#         self.context = context
-#
-#     def get_swipe_distance(self, swipe_intensity):
-#         if swipe_intensity == 'short':
-#             return 0.55, 0.45
-#         elif swipe_intensity == 'medium':
-#             return 0.60, 0.40
-#         elif swipe_intensity == 'long':
-#             return 0.65, 0.35
-#         elif swipe_intensity == 'deep':
-#             return 0.90, 0.10
-#         else:
-#             raise ValueError("Недопустимое значение для swipe_intensity. Используйте 'short', 'medium' или 'long'.")
-#
-#     def scroll_down(self, swipe_intensity='medium'):
-#         size = self.context.get_window_size()
-#         start_factor, end_factor = self.get_swipe_distance(swipe_intensity)
-#         starty = size['height'] * start_factor
-#         endy = size['height'] * end_factor
-#         startx = size['width'] / 2
-#         if swipe_intensity == 'deep':
-#             self.context.swipe(startx, starty, startx, endy, 100)
-#         else:
-#             self.context.swipe(startx, starty, startx, endy, 400)
-#
-#
-#     def scroll_right(self, swipe_intensity='medium'):
-#         self.size = self.context.get_window_size()
-#         start_factor, end_factor = self.get_swipe_distance(swipe_intensity)
-#         startx = self.size['width'] * (1 - start_factor)
-#         endx = self.size['width'] * start_factor
-#         starty = self.size['height'] / 2
-#         if swipe_intensity == 'deep':
-#             self.context.swipe(startx, starty, startx, endx, 100)
-#         else:
-#             self.context.swipe(startx, starty, startx, endx, 400)
-#
-#     def scroll_left(self, swipe_intensity='medium'):
-#         self.size = self.context.get_window_size()
-#         start_factor, end_factor = self.get_swipe_distance(swipe_intensity)
-#         startx = self.size['width'] * start_factor
-#         endx = self.size['width'] * (1 - start_factor)
-#         starty = self.size['height'] / 2
-#         if swipe_intensity == 'deep':
-#             self.context.swipe(startx, starty, startx, endx, 100)
-#         else:
-#             self.context.swipe(startx, starty, startx, endx, 400)
-#
-#     def scroll_up(self, swipe_intensity='medium'):
-#         self.size = self.context.get_window_size()
-#         start_factor, end_factor = self.get_swipe_distance(swipe_intensity)
-#         starty = self.size['height'] * end_factor
-#         endy = self.size['height'] * start_factor
-#         startx = self.size['width'] / 2
-#         if swipe_intensity == 'deep':
-#             self.context.swipe(startx, starty, startx, endy, 100)
-#         else:
-#             self.context.swipe(startx, starty, startx, endy, 400)
+
+class Swiper:
+
+    def __init__(self, context):
+        self.context = context
+
+    def get_swipe_distance(self, swipe_intensity):
+        if swipe_intensity == 'short':
+            return 0.55, 0.45
+        elif swipe_intensity == 'medium':
+            return 0.60, 0.40
+        elif swipe_intensity == 'long':
+            return 0.65, 0.35
+        elif swipe_intensity == 'deep':
+            return 0.90, 0.10
+        else:
+            raise ValueError("Недопустимое значение для swipe_intensity. Используйте 'short', 'medium' или 'long'.")
+
+    def scroll_down(self, swipe_intensity='medium'):
+        size = self.context.get_window_size()
+        start_factor, end_factor = self.get_swipe_distance(swipe_intensity)
+        starty = size['height'] * start_factor
+        endy = size['height'] * end_factor
+        startx = size['width'] / 2
+        if swipe_intensity == 'deep':
+            self.context.swipe(startx, starty, startx, endy, 100)
+        else:
+            self.context.swipe(startx, starty, startx, endy, 400)
+
+
+    def scroll_right(self, swipe_intensity='medium'):
+        self.size = self.context.get_window_size()
+        start_factor, end_factor = self.get_swipe_distance(swipe_intensity)
+        startx = self.size['width'] * (1 - start_factor)
+        endx = self.size['width'] * start_factor
+        starty = self.size['height'] / 2
+        if swipe_intensity == 'deep':
+            self.context.swipe(startx, starty, startx, endx, 100)
+        else:
+            self.context.swipe(startx, starty, startx, endx, 400)
+
+    def scroll_left(self, swipe_intensity='medium'):
+        self.size = self.context.get_window_size()
+        start_factor, end_factor = self.get_swipe_distance(swipe_intensity)
+        startx = self.size['width'] * start_factor
+        endx = self.size['width'] * (1 - start_factor)
+        starty = self.size['height'] / 2
+        if swipe_intensity == 'deep':
+            self.context.swipe(startx, starty, startx, endx, 100)
+        else:
+            self.context.swipe(startx, starty, startx, endx, 400)
+
+    def scroll_up(self, swipe_intensity='medium'):
+        self.size = self.context.get_window_size()
+        start_factor, end_factor = self.get_swipe_distance(swipe_intensity)
+        starty = self.size['height'] * end_factor
+        endy = self.size['height'] * start_factor
+        startx = self.size['width'] / 2
+        if swipe_intensity == 'deep':
+            self.context.swipe(startx, starty, startx, endy, 100)
+        else:
+            self.context.swipe(startx, starty, startx, endy, 400)
 
