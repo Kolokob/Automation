@@ -11,6 +11,7 @@ from tenacity import retry, wait_fixed, stop_after_attempt
 import time
 
 from Steps.steps_android.base_steps import Swiper, BaseFixture
+
 base_fixture_attr = BaseFixture()
 now = datetime.now().day
 
@@ -67,7 +68,7 @@ def execute_scenario(context):
         execute_scenario(context)
 
 
-@given('I click on "Get a Quote"')
+@given('I click on "Get a Quote" android')
 def step_login(context):
     counter = 0
     while counter < 5:
@@ -79,7 +80,7 @@ def step_login(context):
             counter += 1
 
 
-@then('I add pick-up address as "{address}"')
+@then('I add pick-up address as "{address}" android')
 def step_login(context, address):
     context.pick_up_address = address
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).click()
@@ -87,7 +88,7 @@ def step_login(context, address):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.view.ViewGroup[@resource-id="com.snpx.customer:id/place_item_view"])[1]'))).click()
 
 
-@then('I add "{pick_up_num}" pick-up\'s addresses and "{drop_off_num}" drop-off addresses')
+@then('I add "{pick_up_num}" pick-up\'s addresses and "{drop_off_num}" drop-off addresses android')
 def step_login(context, pick_up_num, drop_off_num):
     import random
     import string
@@ -106,36 +107,39 @@ def step_login(context, pick_up_num, drop_off_num):
     details = [''.join(random.choice(string.ascii_lowercase) for _ in range(random.randint(3, 8))) for _ in range(40)]
     context.addresses_amount = max(pick_up_num, drop_off_num)
     for i in range(max(pick_up_num, drop_off_num)):
-        if i < pick_up_num:
-            # Adding pick-up
-            if i > 0:
-                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnAddPickup'))).click()
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).click()
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).send_keys(addresses[i])
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.view.ViewGroup[@resource-id="com.snpx.customer:id/place_item_view"])[1]'))).click()
-
-            # Add location details
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocationDetails'))).send_keys(details[i])
-
-            # Click on 'Continue' button
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnContinue'))).click()
-
-        if i < drop_off_num:
-            # Adding drop-off
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnAddDropOff'))).click()
-            try:
+        try:
+            if i < pick_up_num:
+                # Adding pick-up
+                if i > 0:
+                    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnAddPickup'))).click()
                 context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).click()
-                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).send_keys(addresses[pick_up_num + i])
-            except StaleElementReferenceException:
-                time.sleep(2)
-                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).send_keys(addresses[pick_up_num + i])
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.view.ViewGroup[@resource-id="com.snpx.customer:id/place_item_view"])[1]'))).click()
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).send_keys(addresses[i])
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.view.ViewGroup[@resource-id="com.snpx.customer:id/place_item_view"])[1]'))).click()
 
-            # Add location details
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocationDetails'))).send_keys(details[pick_up_num + i])
+                # Add location details
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocationDetails'))).send_keys(details[i])
 
-            # Click on 'Continue' button
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnContinue'))).click()
+                # Click on 'Continue' button
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnContinue'))).click()
+
+            if i < drop_off_num:
+                # Adding drop-off
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnAddDropOff'))).click()
+                try:
+                    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).click()
+                    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).send_keys(addresses[pick_up_num + i])
+                except StaleElementReferenceException:
+                    time.sleep(2)
+                    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocation'))).send_keys(addresses[pick_up_num + i])
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.view.ViewGroup[@resource-id="com.snpx.customer:id/place_item_view"])[1]'))).click()
+
+                # Add location details
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocationDetails'))).send_keys(details[pick_up_num + i])
+
+                # Click on 'Continue' button
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnContinue'))).click()
+        except StaleElementReferenceException:
+            continue
 
 
 # @then('I add "{pick_up_num}" pick-up\'s addresses and "{drop_off_num}" drop-off addresses')
@@ -176,7 +180,11 @@ def step_login(context, pick_up_num, drop_off_num):
 #         # CLick on 'Continue' button
 #         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnContinue'))).click()
 
-@then('I select "{service}" service')
+@given('I select country as "{country}" android')
+def step_login(context, country):
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/lytCountry'))).click()
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//android.widget.TextView[@resource-id="com.snpx.customer:id/txtName" and @text="{country}"]'))).click()
+@then('I select "{service}" service android')
 def step_login(context, service):
     counter = 0
     while counter < 5:
@@ -189,16 +197,16 @@ def step_login(context, service):
             counter += 1
             context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/imgClose'))).click()
             context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnInstantOrder'))).click()
-@then('I add location details as "{details}"')
+@then('I add location details as "{details}" android')
 def step_login(context, details):
     context.details = details
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLocationDetails'))).send_keys(details)
 
-@then('I click Continue')
+@then('I click Continue android')
 def step_login(context):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnContinue'))).click()
 
-@then('I add drop-off address as "{address}"')
+@then('I add drop-off address as "{address}" android')
 def step_login(context, address):
     context.drop_off_address = address
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnAddDropOff'))).click()
@@ -211,7 +219,7 @@ def step_login(context, address):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.view.ViewGroup[@resource-id="com.snpx.customer:id/place_item_view"])[1]'))).click()
 
 
-@then('I add parcel size as "{parsel_size}" and "{vehicle_type}"')
+@then('I add parcel size as "{parsel_size}" and "{vehicle_type}" android')
 def step_login(context, parsel_size, vehicle_type):
     context.parsel_size = parsel_size
     if parsel_size == 'small':
@@ -281,7 +289,7 @@ def step_login(context, parsel_size, vehicle_type):
 #         elif parsel_size != 'small' or parsel_size != 'medium':
 #             context.driver.find_element(by=AppiumBy.XPATH, value=f'(//android.widget.TextView[@resource-id="com.snpx.customer:id/lblVehicleType"])[1]').click()
 
-@then('I make a "{length}" "{direction}" swipe')
+@then('I make a "{length}" "{direction}" swipe android')
 def step_login(context, length, direction):
     directions = {
         'down': 'scroll_down',
@@ -297,7 +305,7 @@ def step_login(context, length, direction):
         raise ValueError(f"Invalid direction: {direction}. Must be one of {', '.join(directions.keys())}")
 
 
-@then('I add declared value "{value}"')
+@then('I add declared value "{value}" android')
 def step_login(context, value):
     if int(value) > 0:
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtItemValue'))).send_keys(value)
@@ -305,7 +313,7 @@ def step_login(context, value):
     else:
         context.declared_value = 0
 
-@then('I add pick-up time as "{pick_up_time}" with days "{days_or_date}" and time "{time}" for each and start date as "{start_date}"')
+@then('I add pick-up time as "{pick_up_time}" with days "{days_or_date}" and time "{time}" for each and start date as "{start_date}" android')
 def step_login(context, pick_up_time, days_or_date, time, start_date):
     context.pick_up_time = pick_up_time
     if pick_up_time == 'urgent':
@@ -348,7 +356,7 @@ def step_login(context, pick_up_time, days_or_date, time, start_date):
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'android:id/button1'))).click()
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnConfirm'))).click()
 
-@then('I add extra services "{extra_service}" and service "{service}"')
+@then('I add extra services "{extra_service}" and service "{service}" android')
 def step_login(context, extra_service, service):
     extra_service = extra_service.split(', ')
     service = service.split(', ')
@@ -378,12 +386,12 @@ def step_login(context, extra_service, service):
 
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnConfirm'))).click()
 
-@then('I add promo code as "{promo_code}"')
+@then('I add promo code as "{promo_code}" android')
 def step_login(context, promo_code):
     context.promo_code = promo_code
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtPromo'))).send_keys(promo_code)
 
-@then('I add tips as "{tips}"')
+@then('I add tips as "{tips}" android')
 def step_login(context, tips):
     context.tips = tips
     if tips == 'None' or tips is None:
@@ -394,12 +402,12 @@ def step_login(context, tips):
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtTip'))).send_keys(tips)
         context.order_price = context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.TextView[@resource-id="com.snpx.customer:id/txtTotalAmount"]'))).text
 
-@then('I add name of the order as "{name}"')
+@then('I add name of the order as "{name}" android')
 def step_login(context, name):
     context.order_name = f"AUTO TEST №{unique_number}; Name: {name}"
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtSendingName'))).send_keys(f"AUTO TEST №{unique_number}; Name: {name}")
 
-@then('I add description to the order as "{description}"')
+@then('I add description to the order as "{description}" android')
 def step_login(context, description):
     context.order_description = description
     counter = 0
@@ -411,7 +419,7 @@ def step_login(context, description):
             counter += 1
 
 
-@then('I add "{amount}" photos')
+@then('I add "{amount}" photos android')
 def step_login(context, amount):
     base_fixture_attr.check_photos_attached(amount)
     for i in range(1, amount):
@@ -422,7 +430,7 @@ def step_login(context, amount):
         context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'(//android.widget.ImageView[@content-desc="Image"])[{i}]'))).click()
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/menu_done'))).click()
 
-@then('I add signature "{decision}"')
+@then('I add signature "{decision}" android')
 def step_login(context, decision):
     if decision == "Yes":
         context.signature = True
@@ -430,22 +438,22 @@ def step_login(context, decision):
     elif decision == "No":
         context.signature = False
 
-@then('I add sender full name as "{sender_full_name}"')
+@then('I add sender full name as "{sender_full_name}" android')
 def step_login(context, sender_full_name):
     context.sender_full_name = sender_full_name
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtFullName'))).send_keys(sender_full_name)
 
-@then('I add sender phone number as "{sender_phone_number}"')
+@then('I add sender phone number as "{sender_phone_number}" android')
 def step_login(context, sender_phone_number):
     context.sender_phone_number = sender_phone_number
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtPhone'))).send_keys(sender_phone_number)
 
-@then('I add receiver full name as "{receiver_full_name}"')
+@then('I add receiver full name as "{receiver_full_name}" android')
 def step_login(context, receiver_full_name):
     context.receiver_full_name = receiver_full_name
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtFullName'))).send_keys(receiver_full_name)
 
-@then('I add receiver\'s and sender\'s all info in all required fields')
+@then('I add receiver\'s and sender\'s all info in all required fields android')
 def step_login(context):
     context.swipe_attr = Swiper(context)
     context.sender_phone_number = "5104029082"
@@ -467,14 +475,12 @@ def step_login(context):
             last_elements[1].send_keys(context.sender_phone_number)
         counter += 1
 
-
-
-@then('I add receiver phone number as "{receiver_phone_number}"')
+@then('I add receiver phone number as "{receiver_phone_number}" android')
 def step_login(context, receiver_phone_number):
     context.receiver_phone_number = receiver_phone_number
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.EditText[@resource-id="com.snpx.customer:id/txtPhone" and @text="Receiver\'s phone number"]'))).send_keys(receiver_phone_number)
 
-@then('I add credit card info as "{credit_card_number}" for credit card number, "{expiration_date}" for expiration date and "{cvv}" for CVV')
+@then('I add credit card info as "{credit_card_number}" for credit card number, "{expiration_date}" for expiration date and "{cvv}" for CVV android')
 def step_login(context, credit_card_number, expiration_date, cvv):
     context.credit_card_info = [credit_card_number, expiration_date, cvv]
     counter = 0
@@ -483,11 +489,12 @@ def step_login(context, credit_card_number, expiration_date, cvv):
             context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_card_number'))).send_keys(credit_card_number)
             context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_expiry'))).send_keys(expiration_date)
             context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_cvc'))).send_keys(cvv)
+            break
         except:
             counter += 1
             context.driver.swipe(300, 1380, 300, 330, 1000)
 
-@then('I pay with correct credit card')
+@then('I pay with correct credit card android')
 def step_payment(context):
     context.credit_card_info = ['4242 4242 4242 4242', '0430', '123']
     try:
@@ -499,7 +506,7 @@ def step_payment(context):
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_expiry'))).send_keys('0430')
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_cvc'))).send_keys('123')
 
-@then('I pay with wrong credit card')
+@then('I pay with wrong credit card android')
 def step_payment(context):
     context.credit_card_info = ['1234 1234 1234 1234', '0430', '123']
     try:
@@ -511,7 +518,7 @@ def step_payment(context):
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_expiry'))).send_keys('0430')
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/et_cvc'))).send_keys('123')
 
-@then('I pay with payment link')
+@then('I pay with payment link android')
 def step_payment(context):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.RelativeLayout[@resource-id="com.snpx.customer:id/rltPaymentMethod"]/android.widget.ImageView[2]'))).click()
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/rdbCreatePaymentLink'))).click()
@@ -556,7 +563,7 @@ def step_payment(context):
 #         print(f'Card {context.credit_card_info[0]} was not accepted with an unexpected error: {error_message}')
 
 
-@then('I should see an error message')
+@then('I should see an error message android')
 def step_login(context):
     time.sleep(2)
     specific_error_locator = (AppiumBy.ID, "com.snpx.customer:id/textinput_error")
@@ -591,7 +598,7 @@ def step_login(context):
 
 
 # There is no editing email, due to high complexity making it dynamic
-@then('I add credentials for my new account as "{first_name}" for the first name, "{last_name}" for the last name, and "{phone_number}" for the phone number')
+@then('I add credentials for my new account as "{first_name}" for the first name, "{last_name}" for the last name, and "{phone_number}" for the phone number android')
 def step_login(context, first_name, last_name, phone_number):
     context.credentials_for_new_account = [first_name, last_name, phone_number]
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtFirstName'))).send_keys(first_name)
@@ -601,19 +608,19 @@ def step_login(context, first_name, last_name, phone_number):
 
     context.unique_number = unique_number
 
-@then('I click on "Track Order"')
+@then('I click on "Track Order" android')
 def step_login(context):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnTrackOrder'))).click()
 
-@then('I click on button2 (I have no idea what it is, but it is necessary)')
+@then('I click on button2 (I have no idea what it is, but it is necessary) android')
 def step_login(context):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/button2'))).click()
 
-@then('I retrieve password from the email')
+@then('I retrieve password from the email android')
 def step_login(context):
     context.new_password = BaseFixture.get_password_from_email(context)
 
-@then('I navigate the latest order')
+@then('I navigate the latest order android')
 def step_login(context):
     time.sleep(3)
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/navigation_orders'))).click()
@@ -625,7 +632,7 @@ def step_login(context):
     context.order_id = context.wait.until(EC.presence_of_element_located((AppiumBy.XPATH, '//android.widget.TextView[@resource-id="com.snpx.customer:id/txtTitle"]'))).text[1:]
 
 
-@then('I extract data to json file')
+@then('I extract data to json file android')
 def step_login(context):
     base_fixture_attr.extract_data_to_json_file(context, context.order_id, context.order_name, context.order_price, context.sender_full_name, context.sender_phone_number,
                                       context.receiver_full_name, context.receiver_phone_number, context.parsel_size,
@@ -633,11 +640,11 @@ def step_login(context):
                                       context.promo_code, context.tips, context.order_description, base_fixture_attr.return_photos_attached(),
                                       base_fixture_attr.signature, unique_number)
 
-@then('I wait for "{seconds}" seconds')
+@then('I wait for "{seconds}" seconds android')
 def step_impl(context, seconds):
     time.sleep(int(seconds))
 
-@then('I enjoy my work')
+@then('I enjoy my work android')
 def step_impl(context):
     end_time = time.time() + 5
     while time.time() < end_time:
@@ -646,16 +653,16 @@ def step_impl(context):
             sys.stdout.flush()
             time.sleep(0.3)
 
-@given('I compare two JSON files from client and driver')
+@given('I compare two JSON files from client and driver android')
 def step_impl(context):
     base_fixture_attr.compare_files()
 
-@then('I select payment type as payment link')
+@then('I select payment type as payment link android')
 def step_impl(context):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.RelativeLayout[@resource-id="com.snpx.customer:id/rltPaymentMethod"]/android.widget.ImageView[2]'))).click()
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/rdbCreatePaymentLink'))).click()
 
-@then('I add payer\'s phone number "{phone_number}" and email "{email}"')
+@then('I add payer\'s phone number "{phone_number}" and email "{email}" android')
 def step_impl(context, phone_number, email=f'automation.senpex+{unique_number}@outlook.com'):
     if email == '<>':
         email = f'automation.senpex+{unique_number}@outlook.com'
@@ -663,12 +670,12 @@ def step_impl(context, phone_number, email=f'automation.senpex+{unique_number}@o
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtPayersPhoneNumber'))).send_keys(phone_number)
 
 
-@then('I open retrieved payment link and pay for it "{card_number}", "{date}", "{cvv}"')
+@then('I open retrieved payment link and pay for it "{card_number}", "{date}", "{cvv}" android')
 def step_impl(context, card_number, date, cvv):
     payment_link = base_fixture_attr.get_link_from_email()
     base_fixture_attr.open_link_in_browser(payment_link, card_number, date, cvv)
 
-@then('I open "{app}" app')
+@then('I open "{app}" app android')
 def step_impl(context, app):
     if app == "customer":
         app_package = 'com.snpx.customer'
@@ -682,14 +689,14 @@ def step_impl(context, app):
     base_fixture_attr.open_app(context, app_package, app_activity)
 
 
-@then('I add credit card info as "{card_number}" for credit card number, "{date}" for expiration date and "{cvv}" for CVV for payment request')
+@then('I add credit card info as "{card_number}" for credit card number, "{date}" for expiration date and "{cvv}" for CVV for payment request android')
 def step_impl(context, card_number, date, cvv):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.webkit.WebView[@text="Payment request"]/android.view.View[1]/android.view.View/android.view.View/android.view.View/android.view.View[2]/android.view.View[2]'))).send_keys(card_number)
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.webkit.WebView[@text="Payment request"]/android.view.View[1]/android.view.View/android.view.View/android.view.View/android.view.View[2]/android.view.View[4]/android.view.View/android.view.View/android.view.View/android.view.View/android.view.View/android.widget.EditText'))).send_keys(date)
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.webkit.WebView[@text="Payment request"]/android.view.View[1]/android.view.View/android.view.View/android.view.View/android.view.View[2]/android.view.View[6]/android.view.View/android.view.View/android.view.View'))).send_keys(cvv)
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.Button[@text="Pay"]'))).click()
 
-@then('I select payment type as "{payment_type}"')
+@then('I select payment type as "{payment_type}" android')
 def step_impl(context, payment_type):
     if payment_type == 'saved card':
         context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.widget.TextView[@resource-id="com.snpx.customer:id/txtText"])[1]'))).click()
@@ -743,17 +750,17 @@ def step_impl(context, payment_type):
                 context.driver.swipe(300, 330, 300, 1380, 1000)
 
 
-@then('I select saved credit card')
+@then('I select saved credit card android')
 def step_impl(context):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.widget.TextView[@resource-id="com.snpx.customer:id/txtText"])[1]'))).click()
 
-@then('I select recently created credit card')
+@then('I select recently created credit card android')
 def step_impl(context):
     context.driver.swipe(300, 330, 300, 1380, 100)
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//android.widget.TextView[@resource-id="com.snpx.customer:id/txtText"])[last()]'))).click()
     context.driver.swipe(300, 1380, 300, 330, 100)
 
-@then('I add a new card as "{credit_card_number}" for credit card number, "{expiration_date}" for expiration date and "{cvv}" for CVV')
+@then('I add a new card as "{credit_card_number}" for credit card number, "{expiration_date}" for expiration date and "{cvv}" for CVV android')
 def step_login(context, credit_card_number, expiration_date, cvv):
     counter = 0
     while counter < 10:
@@ -775,8 +782,7 @@ def step_login(context, credit_card_number, expiration_date, cvv):
             counter += 1
             context.driver.swipe(300, 330, 300, 1380, 100)
 
-
-@then('I select categories "{category}" with "{add_info}"')
+@then('I select categories "{category}" with "{add_info}" android')
 def step_impl(context, category: str, add_info: str):
     i = 1
     while True:
@@ -854,12 +860,12 @@ def step_impl(context, category: str, add_info: str):
 #
 #         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/btnConfirm'))).click()
 
-@then('I choose vehicle type as "{vehicle_type}" in "{service}"')
+@then('I choose vehicle type as "{vehicle_type}" in "{service}" android')
 def step_impl(context, vehicle_type: str, service: str):
     base_fixture_attr.choose_vehicle_type(context, vehicle_type, service)
 
 
-@then('I select "{helpers_amount}" helpers')
+@then('I select "{helpers_amount}" helpers android')
 def step_impl(context, helpers_amount:str):
     if helpers_amount == 'only driver':
         pass
@@ -871,7 +877,7 @@ def step_impl(context, helpers_amount:str):
         context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//android.widget.RadioButton[@resource-id="com.snpx.customer:id/rbVehicleType" and @text="3"]'))).click()
 
 
-@then('I add pick-up address and drop-off address as "{pick_up_address}", "{drop_off_address}" for Nationwide')
+@then('I add pick-up address and drop-off address as "{pick_up_address}", "{drop_off_address}" for Nationwide android')
 def step_impl(context, pick_up_address, drop_off_address):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, 'com.snpx.customer:id/txtPickupAddress'))).click()
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, 'com.snpx.customer:id/txtLocation'))).send_keys(pick_up_address)
@@ -884,18 +890,18 @@ def step_impl(context, pick_up_address, drop_off_address):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, 'com.snpx.customer:id/btnContinue'))).click()
 
 
-@then('I add pick-up full name as "{full_name}" for Nationwide')
+@then('I add pick-up full name as "{full_name}" for Nationwide android')
 def step_impl(context, full_name):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, 'com.snpx.customer:id/txtPickupFullName'))).send_keys(full_name)
 
 
-@then('I should see order status as "{status}"')
+@then('I should see order status as "{status}" android')
 def step_impl(context, status):
     element = context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtOrderStatus')))
     assert element.text == status
 
 
-@then('I add a new card as "{card_number}" expecting it to fail')
+@then('I add a new card as "{card_number}" expecting it to fail android')
 def step_impl(context, card_number):
     counter = 0
     while counter < 10:
@@ -917,20 +923,20 @@ def step_impl(context, card_number):
             context.driver.swipe(300, 330, 300, 1380, 100)
 
 
-@then('I add all sender\'s info "{send_full_name}", "{send_phone_number}", "{send_email}"')
+@then('I add all sender\'s info "{send_full_name}", "{send_phone_number}", "{send_email}" android')
 def step_impl(context, send_full_name, send_phone_number, send_email):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtPickupFullName'))).send_keys(send_full_name)
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtPickupPhone'))).send_keys(send_phone_number)
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtPickupEmail'))).send_keys(send_email)
 
 
-@then('I add all recipient\'s info "{rec_full_name}", "{rec_phone_number}"')
+@then('I add all recipient\'s info "{rec_full_name}", "{rec_phone_number}" android')
 def step_impl(context, rec_full_name, rec_phone_number):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtDropOffFullName'))).send_keys(rec_full_name)
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtDropOffPhone'))).send_keys(rec_phone_number)
 
 
-@then('I add custom dimensions as "{length}", "{width}", "{height}", "{parcel_weight}", "{packing}"')
+@then('I add custom dimensions as "{length}", "{width}", "{height}", "{parcel_weight}", "{packing}" android')
 def step_impl(context, length, width, height, parcel_weight, packing:str):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLength'))).send_keys(length)
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtWidth'))).send_keys(width)
@@ -941,7 +947,7 @@ def step_impl(context, length, width, height, parcel_weight, packing:str):
         context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, f'//android.widget.CheckedTextView[@resource-id="android:id/text1" and contains(@text, "{packing.capitalize()}")]'))).click()
 
 
-@then('I add additional indo as "{order_name}", "{declared_value}", "{special_notes}", "{schedule_time}"')
+@then('I add additional indo as "{order_name}", "{declared_value}", "{special_notes}", "{schedule_time}" android')
 def step_impl(context, order_name, declared_value, special_notes, schedule_time):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtSendingName'))).send_keys(order_name)
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtDeclaredValue'))).send_keys(declared_value)

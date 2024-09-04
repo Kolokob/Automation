@@ -7,7 +7,7 @@ Feature: I go through test cases from https://docs.google.com/spreadsheets/d/1bG
   Scenario Outline: Order creation and completion as existed user
     Given I select country as "CA" on web
     Then I click Sign In
-    Given I login with credentials "test_base@gmail.com " and "123456"
+    Given I login with credentials "systemcheck@gmail.com" and "123456"
     Then I click on "Place an order" on web
     Then I add "<pick_up_address_amount>" pick-up's addresses and "<drop_off_address_amount>" drop-off addresses on web
     Then I click Continue on web
@@ -21,15 +21,14 @@ Feature: I go through test cases from https://docs.google.com/spreadsheets/d/1bG
     Then I click on "Calculate Price" on web
     Then I add tips as "<tips>" on web
     Then I click Continue on web
-    Then I add name of the order as "TEST URGENT WITHOUT PRICES" on web
+    Then I add name of the order as "APPLE" on web
     Then I add signature "<signature>" on web
     Then I add receiver's and sender's all info in all required fields on web
     Then I click Continue on web
-    Then I add credit card info as "4242424242424242" for credit card number, "333333333" for expiration date and "123323123" for CVV on web
+    Then I add credit card info as "4000001240000000" for credit card number, "333333333" for expiration date and "123323123" for CVV on web
 #    Then I select saved credit card on we
-    Then I wait for "100" seconds on web
     Then I click pay for the order on web
-    Then I wait for "5" seconds on web
+    Then I wait for "2" seconds on web
     Examples:
       | pick_up_address_amount | extra_service        | extra_service_details | drop_off_address_amount | parcel_size | vehicle_type   | declared_value | pick_up_time | days_or_date                  | time                | start_date | tips | signature |
       | 1                      | White gloves service | 60 minutes            | 1                       | medium      | None           | 1310           | urgent       | None                          | None                | None       | 100  | True      |

@@ -122,9 +122,7 @@ class BaseFixture:
                 context.driver.swipe(dic[hmp], 1640, dic[hmp], 1826)
 
         def move_switch_back(direction):
-
-            context.driver.swipe(1275, 1826, 1275, 1640) if direction == 'down' \
-                else context.driver.swipe(1275, 1640, 1275, 1826)
+            context.driver.swipe(1275, 1826, 1275, 1640) if direction == 'down' else context.driver.swipe(1275, 1640, 1275, 1826)
 
         target_hour = int(time.split(':')[0])
         target_minute = int(time.split(':')[1][:2])
@@ -321,7 +319,6 @@ class BaseFixture:
         email_ids = [eid.decode() for eid in email_ids]  # декодируем идентификаторы
 
         if email_ids:
-            # Получаем заголовки всех сообщений
             result, headers = mail.fetch(','.join(email_ids), '(BODY[HEADER.FIELDS (DATE SUBJECT FROM)])')
             email_date_pairs = []
 
@@ -392,11 +389,11 @@ class BaseFixture:
 
         mail.select("inbox")
 
-        # Получить только последние 5 писем
-        status, messages = mail.search(None, '(FROM "noreply@senpex.com")')
-        email_ids = messages[0].split()[-5:]  # Получаем последние 5 писем
 
-        for email_id in reversed(email_ids):  # Проверяем последние письма сначала
+        status, messages = mail.search(None, '(FROM "noreply@senpex.com")')
+        email_ids = messages[0].split()[-5:]
+
+        for email_id in reversed(email_ids):
             res, msg = mail.fetch(email_id, "(RFC822)")
             for response_part in msg:
                 if isinstance(response_part, tuple):

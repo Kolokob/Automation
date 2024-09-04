@@ -8,7 +8,7 @@ from Steps.steps_android.order_steps import unique_number
 
 base_fixture_attr = BaseFixture()
 
-@given("I login as new user with new credentials that were got from the email")
+@given("I login as new user with new credentials that were got from the email android")
 def perform_login_steps(context):
     try:
         context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtLogin').click()
@@ -18,7 +18,7 @@ def perform_login_steps(context):
     context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtPassword').send_keys(context.new_password)
     context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/btnSignIn').click()
 
-@then('I retrieve the login password')
+@then('I retrieve the login password android')
 def step_impl(context):
     time.sleep(2)
     context.new_password = base_fixture_attr.get_password_from_email()
@@ -27,9 +27,9 @@ def step_impl(context):
     context.new_password = base_fixture_attr.get_password_from_email()
 
 
-@given('I login as client with username "{username}" and password "{password}"')
+@given('I login as client with username "{username}" and password "{password}" android')
 def step_login(context, username, password):
-    context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtLogin').click()
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtLogin'))).click()
     context.wait.until(EC.element_to_be_clickable((AppiumBy.ID, 'com.snpx.customer:id/txtEmail'))).send_keys(username)
     context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/txtPassword').send_keys(password)
     context.driver.find_element(by=AppiumBy.ID, value='com.snpx.customer:id/btnSignIn').click()
