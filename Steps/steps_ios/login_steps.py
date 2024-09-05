@@ -2,7 +2,7 @@ from appium.webdriver.common.appiumby import AppiumBy
 from behave import *
 
 
-@given('I login as a driver with username "{username}" and password "{password}"')
+@given('I login as a driver with username "{username}" and password "{password}" ios')
 def login_as_mykyta(context, username, password):
     context.driver.find_element(by=AppiumBy.XPATH, value='//XCUIElementTypeStaticText[@name="Sign in"]').click()
 

@@ -175,7 +175,8 @@ class BaseFixture:
         context.swipe_attr = Swiper(context.driver)
         success = False
         if vehicle_type != 'Car':
-            while not success:
+            counter = 0
+            while not success and counter <= 4: # "counter < {number}" where number is amount of cars / 2
                 try:
                     element = context.wait.until(EC.element_to_be_clickable((AppiumBy.IOS_CLASS_CHAIN, f'**/XCUIElementTypeButton[`name == "{vehicle_type}"`]')))
                     element.click()
@@ -183,11 +184,14 @@ class BaseFixture:
                         success = True
                     else:
                         context.driver.swipe(224, 560, 1, 560, 1000)
+                        counter += 1
                 except TimeoutException:
                     context.driver.swipe(224, 560, 1, 560, 1000)
+                    counter += 1
                 except Exception as e:
                     print(f"Error: {e}")
                     context.driver.swipe(224, 560, 1, 560, 1000)
+                    counter += 1
 
         elif vehicle_type == 'Car':
             context.driver.find_element(by=AppiumBy.XPATH, value=f'(//android.widget.TextView[@resource-id="com.snpx.customer:id/lblVehicleType"])[1]').click()
