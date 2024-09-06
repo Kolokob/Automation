@@ -329,7 +329,7 @@ def step_sender(context):
             # finally:
                 # context.driver.find_element(by=AppiumBy.XPATH, value='//XCUIElementTypeButton[@name="Done"]').click()
         except:
-            print("Well, this is just a giant piece of shit")
+            raise Exception(print("Unable to fill all info for sender and receiver"))
 
         i += 3
     try:
@@ -341,7 +341,7 @@ def step_sender(context):
             except:
                 continue
     except:
-        print("Бля, ну это реально полная хуйня а не приложение, я в рот ебал его")
+        raise Exception(print("Unable to fill all info for sender and receiver"))
 
     time.sleep(100000)
 
