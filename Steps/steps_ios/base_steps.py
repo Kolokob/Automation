@@ -30,7 +30,7 @@ capabilities = {
     "appium:platformVersion": "16.2",
     "appium:language": "en",
     "appium:locale": "US",
-    "appium:udid": "00008120-000849E214DB401E",
+    "appium:udid": "00008030-0012344E3CB9402E",
     "appium:xcodeSigningId": "iPhone Developer",
     "appium:updatedWDABundleId": "com.kolokob.WebDriverAgentRunner"
 }

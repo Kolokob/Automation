@@ -8,13 +8,14 @@ Feature: I go through test cases from https://docs.google.com/spreadsheets/d/1bG
     Given I select country as "Canada" ios
     Given I click on "Get a Quote" ios
     Then I click on "Last-mile delivery" service ios
-    Then I add "1" pick-up's addresses and "1" drop-off addresses ios
+    Then I add "2" pick-up's addresses and "2" drop-off addresses ios
     Then I click on button "Continue" ios
     Then I add parcel size as "heavy_load" and "15ft Box Truck" ios
     Then I click on "Confirm shipment details" ios
     Then I click on "Calculate Price" ios
     Then I click on button "Continue" ios
     Then I add order name as "Obviously test" ios
+    Then I fill all info for sender and receiver ios
 
 
 

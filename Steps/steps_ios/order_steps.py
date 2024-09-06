@@ -1,5 +1,7 @@
 import os
 import time
+
+from appium.webdriver.common.touch_action import TouchAction
 from behave import *
 from appium.webdriver.common.appiumby import AppiumBy
 from selenium.common import NoSuchElementException
@@ -195,7 +197,10 @@ def step_login(context, pick_up_num, drop_off_num):
             context.wait.until(EC.element_to_be_clickable((AppiumBy.IOS_PREDICATE, 'value == "-"'))).send_keys(details[i])
 
             # Click on 'Continue' button
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.IOS_PREDICATE, 'name == "Continue" AND label == "Continue" AND type == "XCUIElementTypeButton"'))).click()
+            if counter >= 2:
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//XCUIElementTypeStaticText[@name="Continue"])[2]'))).click()
+            else:
+                context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//XCUIElementTypeStaticText[@name="Continue"]'))).click()
 
             counter += 1
 
@@ -204,26 +209,52 @@ def step_login(context, pick_up_num, drop_off_num):
             context.wait.until(EC.element_to_be_clickable((AppiumBy.IOS_PREDICATE, 'name == "Add drop-off"'))).send_keys(addresses[i] if context.country == 'US' else f'Vancouver {counter}')
             context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//XCUIElementTypeScrollView/XCUIElementTypeOther'))).click()
             context.wait.until(EC.visibility_of_all_elements_located((AppiumBy.IOS_CLASS_CHAIN, '**/XCUIElementTypeStaticText[`name.length > 0`][6]')))
+            time.sleep(2)
             context.wait.until(EC.element_to_be_clickable((AppiumBy.IOS_PREDICATE, 'name == "Confirm drop-Off address"'))).click()
             context.wait.until(EC.element_to_be_clickable((AppiumBy.IOS_PREDICATE, 'value == "-"'))).send_keys(details[i])
 
             # Click on 'Continue' button
-            context.wait.until(EC.element_to_be_clickable((AppiumBy.IOS_PREDICATE, 'name == "Continue" AND label == "Continue" AND type == "XCUIElementTypeButton"'))).click()
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//XCUIElementTypeStaticText[@name="Continue"]'))).click()
 
 @then('I click on "Get a quote" ios')
 def step_login(context):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//XCUIElementTypeStaticText[@name="Get a Quote"]'))).click()
 
+
 @then('I click on button "Continue" ios')
 def step_login(context):
-    try:
-        context.driver.find_element(by=AppiumBy.XPATH, value='//XCUIElementTypeButton[@name="Continue"]').click()
-    except TimeoutException:
-        context.driver.find_element(by=AppiumBy.XPATH, value='(//XCUIElementTypeButton[@name="Continue"])[2]').click()
+    for i in range(1):
+        try:
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.IOS_CLASS_CHAIN, '**/XCUIElementTypeButton[`name == "Continue"`]'))).click()
+            break
+        except:
+            pass
+
+        try:
+            context.wait.until(EC.element_to_be_clickable((AppiumBy.IOS_PREDICATE, 'name == "Continue" AND label == "Continue" AND type == "XCUIElementTypeButton"'))).click()
+            break
+        except:
+            pass
+
+        try:
+            context.wait.until(
+                EC.element_to_be_clickable((AppiumBy.XPATH, '//XCUIElementTypeButton[@name="Continue"]'))).click()
+            break
+        except:
+            pass
+
+        try:
+            context.driver.execute_script('mobile: tap', {'x': 198, 'y': 604})
+        except:
+            raise(Exception("Unable to click on element"))
 
 @then('I click on "Confirm shipment details" ios')
 def step_login(context):
-    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//XCUIElementTypeStaticText[@name="Confirm shipment details"]'))).click()
+    try:
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//XCUIElementTypeStaticText[@name="Confirm shipment details"]'))).click()
+    except:
+        context.driver.swipe(201, 420, 1, 228, 151)
+        context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//XCUIElementTypeStaticText[@name="Confirm shipment details"]'))).click()
 
 @then('I click on "Calculate Price" ios')
 def step_price(context):
@@ -282,14 +313,37 @@ def step_card_info(context, card_number, expiration_date, cvv):
 
 @then('I fill all info for sender and receiver ios')
 def step_sender(context):
-    context.driver.find_element(by=AppiumBy.XPATH, value='//XCUIElementTypeScrollView/XCUIElementTypeOther/XCUIElementTypeTextField[1]').send_keys("Abracadabra")
-    context.driver.find_element(by=AppiumBy.XPATH, value='//XCUIElementTypeButton[@name="Done"]').click()
-    context.driver.find_element(by=AppiumBy.XPATH, value='//XCUIElementTypeScrollView/XCUIElementTypeOther/XCUIElementTypeTextField[2]').send_keys("Abracadabrovich")
-    context.driver.find_element(by=AppiumBy.XPATH, value='//XCUIElementTypeButton[@name="Done"]').click()
-    context.driver.find_element(by=AppiumBy.XPATH, value='//XCUIElementTypeScrollView/XCUIElementTypeOther/XCUIElementTypeTextField[3]').send_keys(f"automation.senpex+{context.test_id}@outlook.com")
-    context.driver.find_element(by=AppiumBy.XPATH, value='//XCUIElementTypeButton[@name="Done"]').click()
-    context.driver.find_element(by=AppiumBy.XPATH, value='//XCUIElementTypeTextField[@value="(000) 000-0000"]').send_keys("5104022040")
-    context.driver.find_element(by=AppiumBy.XPATH, value='//XCUIElementTypeButton[@name="Done"]').click()
+    i = 2
+    for k in range(1, context.addresses_amount+5):
+        try:
+            context.driver.find_element(by=AppiumBy.XPATH, value=f'//XCUIElementTypeScrollView/XCUIElementTypeOther/XCUIElementTypeTextField[{i}]').send_keys("Debora")
+            # context.driver.find_element(by=AppiumBy.XPATH, value='//XCUIElementTypeButton[@name="Done"]').click()
+
+            try:
+                context.driver.find_element(by=AppiumBy.XPATH, value=f'(//XCUIElementTypeTextField[@value="(000) 000-0000"])[{k}]').send_keys("5104029082")
+            except:
+                try:
+                    context.driver.find_element(by=AppiumBy.XPATH, value=f'(//XCUIElementTypeTextField[@value="(000) 000-0000"])[{k-1}]').send_keys("5104029082")
+                except:
+                    context.driver.find_element(by=AppiumBy.XPATH, value=f'(//XCUIElementTypeTextField[@value="(000) 000-0000"])[{k+1}]').send_keys("5104029082")
+            # finally:
+                # context.driver.find_element(by=AppiumBy.XPATH, value='//XCUIElementTypeButton[@name="Done"]').click()
+        except:
+            print("Well, this is just a giant piece of shit")
+
+        i += 3
+    try:
+        context.driver.find_element(by=AppiumBy.XPATH, value='//XCUIElementTypeButton[@name="Done"]').click()
+        context.driver.swipe(120, 100, 120, 622, 100)
+        for i in range(10):
+            try:
+                context.driver.find_element(by=AppiumBy.XPATH, value=f'(//XCUIElementTypeTextField[@value="(000) 000-0000"])[{i}]').send_keys("5104029082")
+            except:
+                continue
+    except:
+        print("Бля, ну это реально полная хуйня а не приложение, я в рот ебал его")
+
+    time.sleep(100000)
 
 @then('I click pay for the order ios')
 def step_pay(context):
@@ -299,11 +353,6 @@ def step_pay(context):
 @given('I create an instant last-mile order ios')
 def step_instant_last_mile(context):
     context.swipe_attr = Swiper(context.driver)
-
-    with open(counter_file, 'r') as file:
-        a = int(file.read())
-        context.test_id = a
-
 
     # Get a quote
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '//XCUIElementTypeStaticText[@name="Get a Quote"]'))).click()
@@ -391,8 +440,6 @@ def step_instant_last_mile(context):
     context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, '(//XCUIElementTypeStaticText[contains(@name, "Pay") or contains(@label, "Pay")])[2]'))).send_keys("5104022040")
 
     time.sleep(10000)
-
-
 
 # @then('I as driver ios app extract all data to json file')
 # def step_impl(context):
@@ -609,6 +656,10 @@ def step_login(context, parsel_size, vehicle_type):
 
 @given('I select country as "{country}" ios')
 def step_impl(context, country):
+    with open(counter_file, 'r') as file:
+        a = int(file.read())
+        context.test_id = a
+
     country_dict = {'United States':'US', 'Canada':'CA'}
     time.sleep(2)
 
