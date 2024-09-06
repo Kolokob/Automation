@@ -17,6 +17,14 @@ now = datetime.now().day
 
 counter_file = '/Users/kolokob/PycharmProjects/Automation/Steps/steps_android/counter.txt'
 
+with open(counter_file, 'r') as file:
+    unique_number = int(file.read())
+
+unique_number += 1
+
+with open(counter_file, 'w') as file:
+    file.write(str(unique_number))
+
 @given("I click on the latest available order ios")
 def step_impl(context):
     context.driver.find_element(by=AppiumBy.XPATH, value=f"//XCUIElementTypeTable/XCUIElementTypeCell/XCUIElementTypeOther[1]/XCUIElementTypeOther").click()
@@ -301,7 +309,7 @@ def step_name(context):
     context.driver.find_element(by=AppiumBy.XPATH, value='//XCUIElementTypeTextField[@value="(000) 000-0000"]').send_keys("5104020440")
     context.driver.find_element(by=AppiumBy.XPATH, value='//XCUIElementTypeButton[@name="Done"]').click()
 
-@then('I click "Conferm order" ios')
+@then('I click "Confirm order" ios')
 def step_conferm(context):
     context.driver.find_element(by=AppiumBy.XPATH, value='//XCUIElementTypeButton[@name="Confirm order"]').click()
 
@@ -343,11 +351,12 @@ def step_sender(context):
     except:
         raise Exception(print("Unable to fill all info for sender and receiver"))
 
-    time.sleep(100000)
+    context.driver.swipe(120, 622, 120, 100, 100)
+    context.driver.swipe(120, 622, 120, 100, 100)
 
 @then('I click pay for the order ios')
 def step_pay(context):
-    context.driver.find_element(by=AppiumBy.XPATH, value="(//XCUIElementTypeStaticText[contains(@name, 'Pay') or contains(@label, 'Pay')])[2]").send_keys("5104022040")
+    context.driver.find_element(by=AppiumBy.XPATH, value="(//XCUIElementTypeStaticText[contains(@name, 'Pay') or contains(@label, 'Pay')])[2]").click()
 
 
 @given('I create an instant last-mile order ios')
@@ -673,3 +682,19 @@ def step_impl(context, country):
     if actual_text != country_dict[country]:
         context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//XCUIElementTypeImage[@name="DownArrowGray"]'))).click()
         context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//XCUIElementTypeStaticText[@name="{country}"]'))).click()
+
+@then('I add credit card info as "{card_number}" for credit card number, "{expiration_date}" for expiration date and "{cvv}" for CVV ios')
+def step_impl(context, card_number, expiration_date, cvv):
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//XCUIElementTypeTextField[@name="card number"]'))).send_keys(card_number)
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//XCUIElementTypeTextField[@name="expiration date"]'))).send_keys(expiration_date)
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//XCUIElementTypeTextField[@name="CVC"]'))).send_keys(cvv)
+    context.driver.swipe(120, 100, 120, 622, 100)
+
+
+@then('I add credentials for my new account as "Avram" for the first name, "Linkolnych" for the last name, and "5104029084" for the phone number ios')
+def step_impl(context):
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//XCUIElementTypeScrollView/XCUIElementTypeOther/XCUIElementTypeTextField[1]'))).send_keys('Avram')
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//XCUIElementTypeScrollView/XCUIElementTypeOther/XCUIElementTypeTextField[2]'))).send_keys('Linkolnych')
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//XCUIElementTypeScrollView/XCUIElementTypeOther/XCUIElementTypeTextField[3]'))).send_keys(f'automation.senpex+{unique_number}@outlook.com')
+    context.wait.until(EC.element_to_be_clickable((AppiumBy.XPATH, f'//XCUIElementTypeTextField[@value="(000) 000-0000"]'))).send_keys('5104029084')
+

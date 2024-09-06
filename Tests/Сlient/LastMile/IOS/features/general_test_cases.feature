@@ -16,6 +16,12 @@ Feature: I go through test cases from https://docs.google.com/spreadsheets/d/1bG
     Then I click on button "Continue" ios
     Then I add order name as "Obviously test" ios
     Then I fill all info for sender and receiver ios
+    Then I click on button "Continue" ios
+    Then I click "Confirm order" ios
+    Then I add credit card info as "4242 4242 4242 4242" for credit card number, "0429" for expiration date and "123" for CVV ios
+    Then I add credentials for my new account as "Avram" for the first name, "Linkolnych" for the last name, and "5104029084" for the phone number ios
+    Then I click pay for the order ios
+#    TODO: Check methods from line 19 to line 23
 
 
 
