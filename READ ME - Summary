@@ -1,0 +1,101 @@
+Вышло так что я успел написать полноценные тесты для
+Last Mile Android
+Last Mile IOS
+Last Mile Web
+Это все клиентская часть
+
+Так же для андроид клиента готов Moving
+И немного Nationwide
+
+Тесты для драйвера куда-то пропали, хоть их и было немного. Было пару тестов грубо говоря взять заказ, прочитать инфу, записать все в json
+
+Комбинированные тесты это просто папка, там нет ничего
+
+Двигаемся далее...
+
+Папка Steps. Это сердце всего проекта. Там расположенны все методы, и для всего, включая API.
+По поводу API, там есть пара файлов которые могут быть полезны, остальные либо недоделанны либо нужны были на один раз
+
+Была большая проблема реструктурировать это все так, что папки Steps и Tests находились раздельно. Я потратил много времени на то чтобы
+Их раделить но все равно при каждом создании новой папки для платформы (то есть если нужно например создать тесты Moving для IOS) нужен набор файлов:
+- features (там хранятся все тесты)
+- steps (без нее behave (фреймворк что я использую) не видит тестов)
+- environment.py (почитайте зачем оно надо, но грубо говоря можно задать то что нужно делать перед началом теста или повторяющиеся действия)
+
+Еще одно ограниченние что связанно что реструктурированием это то что в папке Steps лежит папка steps (внимание на первую букву папок).
+Она там просто должна быть. Ее трогать нельзя
+
+И так, по поводу того как писать тесты. Изначально чем это и хорошо, что когда будет много методов, то можно будет писать тесты не программируя,
+Однако, из-за того что их еще не много, нужно все таки еще попрограммировать.
+
+Если нужно написать тест то ты открываешь папку Tests, затем идешь туда куда тебе надо, например папка Driver. Создаешь папку например IOS.
+Туда вписываешь вышеперечисленные файлы (см. строка 21-23) и в папке features создаешь файл "<test_name>.feature".
+То как писать гиркин файл тебя должны были учить в школе Пряника XD
+
+Помимо этого есть еще файлы что хранятся в корне проекта. Там есть файл по генерации тест кейсов, требования, setup.py (его не трогать), и
+Примеры генерированных тест кейсов
+
+Помимо этого кончно можно найти мусор но хз что сказать
+
+Главно чтобы это все оставалось динамичным)))
+
+В принципе все.
+
+А нет, забыл, есть еще тема с Докером и Дженкинс, но там было сложно.
+Если это читает грамотный автотестер то пожалуйста если тебе не трудно дай профессиональный фитбек
+
+Хотя я уверен что этот мой проект полное гавн...
+
+English version:
+
+It turned out that I managed to write full-fledged tests for:
+
+Last Mile Android
+Last Mile iOS
+Last Mile Web
+This is all the client-side part.
+
+Also, for the Android client, Moving is ready, and a bit of Nationwide.
+
+The tests for the driver have somehow disappeared, although there weren't many.
+There were a couple of tests, roughly speaking, to take an order, read the info, and save everything into JSON.
+
+The Combined Tests is just a folder; there's nothing in it.
+
+Moving on...
+
+The Steps folder is the heart of the entire project. It contains all the methods for everything, including the API.
+
+Regarding the API, there are a couple of files that might be useful; the rest are either unfinished or were needed only once.
+
+There was a big problem restructuring all this so that the Steps and Tests folders were separate.
+I spent a lot of time trying to separate them, but still, every time you create a new folder for a
+platform (for example, if you need to create Moving tests for iOS), you need a set of files: features (where all the tests are stored)
+steps (without it, Behave—the framework I'm using—doesn't see the tests)
+environment.py (read up on why it's needed, but basically, you can specify what needs to be done before the test starts or repetitive actions)
+Another limitation related to the restructuring is that inside the Steps folder, there's a steps folder (note the capitalization of the folder names).
+It just has to be there. Don't touch it.
+
+So, about how to write tests. Initially, the good thing is that when there are many methods, you can write tests without programming.
+However, because there aren't many yet, you still need to do some programming.
+
+If you need to write a test, you open the Tests folder, then go where you need to—for example, the Driver folder.
+Create a folder, say, iOS. You place the aforementioned files there (see lines 21-23), and in the features folder, create a <test_name>.feature file.
+
+They should have taught you how to write a Gherkin file in P. school XD
+
+Besides that, there are other files stored in the root of the project.
+There's a file for generating test cases, requirements, setup.py (don't touch it), and examples of generated test cases.
+
+Of course, you might also find some junk, but I don't know what to say.
+
+The main thing is that it all remains dynamic)))
+
+That's basically it.
+
+Oh wait, I forgot—there's also stuff with Docker and Jenkins, but that was complicated.
+
+If a competent QA tester is reading this, please, if you don't mind, give professional feedback.
+
+Although I'm sure that this project of mine is complete piece of shi..
+

@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
+
+    // Create Sender
     document.getElementById('create-sender-form').addEventListener('submit', function (e) {
         e.preventDefault();
         const email = document.getElementById('create-email').value;
@@ -14,10 +16,17 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(response => response.json())
         .then(data => {
-            document.getElementById('create-result').textContent = data.message || data.error;
+            let resultDiv = document.getElementById('create-result');
+            resultDiv.textContent = '';
+            if (data.message) {
+                resultDiv.textContent = data.message;
+            } else {
+                resultDiv.textContent = 'Error: ' + data.error;
+            }
         });
     });
 
+    // Login
     document.getElementById('login-form').addEventListener('submit', function (e) {
         e.preventDefault();
         const email = document.getElementById('login-email').value;
@@ -33,10 +42,17 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(response => response.json())
         .then(data => {
-            document.getElementById('login-result').textContent = data.session_key || data.error;
+            let resultDiv = document.getElementById('login-result');
+            resultDiv.textContent = '';
+            if (data.session_key) {
+                resultDiv.textContent = 'Session Key: ' + data.session_key;
+            } else {
+                resultDiv.textContent = 'Error: ' + data.error;
+            }
         });
     });
 
+    // Get Token
     document.getElementById('get-token-form').addEventListener('submit', function (e) {
         e.preventDefault();
         const email = document.getElementById('token-email').value;
@@ -53,10 +69,17 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(response => response.json())
         .then(data => {
-            document.getElementById('token-result').textContent = data.token || data.error;
+            let resultDiv = document.getElementById('token-result');
+            resultDiv.textContent = '';
+            if (data.token) {
+                resultDiv.textContent = 'Token: ' + data.token;
+            } else {
+                resultDiv.textContent = 'Error: ' + data.error;
+            }
         });
     });
 
+    // Logout
     document.getElementById('logout-form').addEventListener('submit', function (e) {
         e.preventDefault();
         const email = document.getElementById('logout-email').value;
@@ -73,10 +96,17 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(response => response.json())
         .then(data => {
-            document.getElementById('logout-result').textContent = data.message || data.error;
+            let resultDiv = document.getElementById('logout-result');
+            resultDiv.textContent = '';
+            if (data.message) {
+                resultDiv.textContent = data.message;
+            } else {
+                resultDiv.textContent = 'Error: ' + data.error;
+            }
         });
     });
 
+    // Update Profile
     document.getElementById('update-profile-form').addEventListener('submit', function (e) {
         e.preventDefault();
         const email = document.getElementById('update-email').value;
@@ -97,7 +127,13 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(response => response.json())
         .then(data => {
-            document.getElementById('update-result').textContent = data.message || data.error;
+            let resultDiv = document.getElementById('update-result');
+            resultDiv.textContent = '';
+            if (data.message) {
+                resultDiv.textContent = data.message;
+            } else {
+                resultDiv.textContent = 'Error: ' + data.error;
+            }
         });
     });
 });

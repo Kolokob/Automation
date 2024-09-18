@@ -4,14 +4,7 @@ stripe.api_key = "pk_test_51Pv0hIJolQv4GJEHBoiy1JcpoecMYYlJCwqttbYN2Luk1QGv14rsi
 
 def create_stripe_token():
     try:
-        token = stripe.Token.create(
-            card={
-                "number": "4242424242424242",
-                "exp_month": 12,
-                "exp_year": 2024,
-                "cvc": "123",
-            },
-        )
+        token = stripe.Token.create(card={"number": "4242424242424242", "exp_month": 12, "exp_year": 2024, "cvc": 123})
         return token.id
     except Exception as e:
         print(f"Failed to create Stripe token: {e}")

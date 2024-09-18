@@ -140,7 +140,7 @@ print(senpex_api.add_credit_card())
 #     name = 'myspider'
 #     allowed_domains = ['v4-sandbox.senpex.com']
 #
-#     # Список ссылок
+#     # The list of links
 #     custom_links = [
 #         "https://v4-sandbox.senpex.com/",
 #         "https://v4-sandbox.senpex.com/how-senpex-works",

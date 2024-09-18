@@ -217,10 +217,11 @@ class Sender:
 
 if __name__ == "__main__":
     user = Sender('test_base@gmail.com', '123456', 'ca')
-    user.login()
-    user.get_token()
-    user.get_active_orders()
-    print(user.get_chat_conversations())
+    for i in range(1000):
+        user.login()
+        user.get_token()
+        user.get_active_orders()
+
 
 # import asyncio
 # import aiohttp

@@ -10,4 +10,7 @@ class WebsiteUser(HttpUser):
     wait_time = between(1, 5)
 
 
+
+# This is command to start it
+# Write this is terminal and follow the instructions
 # locust -f locustfile.py --host=https://v4-sandbox.senpex.com/

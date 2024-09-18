@@ -41,8 +41,7 @@ def step_impl(context):
     import re
 
     extracted_data = {}
-    vehicle_types = ['Car', 'Pickup Truck', 'SUV', '9ft Cargo Van', '9ft Ref Van', '10ft Box Truck', '15ft Box Truck',
-                     '17ft Box Truck']
+    vehicle_types = ['Car', 'Pickup Truck', 'SUV', '9ft Cargo Van', '9ft Ref Van', '10ft Box Truck', '15ft Box Truck', '17ft Box Truck']
     size_types = ['Small (1-25 Lbs)', 'Medium (26-50 Lbs)', 'Large (51-70 Lbs)', 'Heavy Load (71+ Lbs)']
 
     def is_address(text):
